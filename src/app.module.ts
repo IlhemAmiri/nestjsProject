@@ -6,6 +6,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigAppModule } from '../config.module';
 import { UserModule } from './user/user.module';
 import { CarModule } from './car/car.module';
+import { ReservationModule } from './reservation/reservation.module';
+import { NoteModule } from './note/note.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { CarModule } from './car/car.module';
     }),
     UserModule,
     CarModule,
+    ReservationModule,
+    NoteModule,
   ],
   controllers: [AppController],
   providers: [AppService],

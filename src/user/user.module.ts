@@ -21,6 +21,9 @@ import { ConfigAppModule } from '../../config.module';
   ],
   providers: [UserService],
   controllers: [UserController],
-  exports: [UserService],
+  exports: [
+    UserService,
+    MongooseModule.forFeature([{ name: Client.name, schema: ClientSchema }]),
+  ],
 })
 export class UserModule {}

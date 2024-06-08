@@ -8,6 +8,9 @@ import { Car, CarSchema } from './car.entity';
         MongooseModule.forFeature([{ name: Car.name, schema: CarSchema }]),
       ],
   controllers: [CarController],
-  providers: [CarService]
+  providers: [CarService],
+  exports: [
+    MongooseModule.forFeature([{ name: Car.name, schema: CarSchema }]),
+  ],
 })
 export class CarModule {}

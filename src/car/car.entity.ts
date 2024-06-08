@@ -33,7 +33,8 @@ export class Car extends Document {
 
   @Prop({ 
     required: true, 
-    enum: ['disponible', 'reserver', 'en entretien']
+    enum: ['disponible', 'reserver', 'en entretien'],
+    default: 'disponible',
   })
   disponibilite: string;
 
