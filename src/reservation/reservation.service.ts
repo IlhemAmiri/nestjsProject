@@ -107,6 +107,25 @@ export class ReservationService {
             if (overlappingReservation) {
                 throw new BadRequestException('Updating status results in overlapping reservation periods');
             }
+            // const overlappingReservations = await this.reservationModel.find({
+            //     idVoiture: reservation.idVoiture,
+            //     status: { $in: ['en attente', 'confirmer'] },
+            //     $and: [
+            //         { _id: { $ne: reservation._id } }, // Exclude the current reservation
+            //         {
+            //             $or: [
+            //                 { dateDebut: { $lt: reservation.dateFin }, dateFin: { $gt: reservation.dateDebut } },
+            //                 { dateDebut: { $gte: reservation.dateDebut, $lt: reservation.dateFin } }
+            //             ]
+            //         }
+            //     ]
+            // }).exec();
+    
+            // // Cancel overlapping reservations
+            // await Promise.all(overlappingReservations.map(async (overlap) => {
+            //     overlap.status = 'annuler';
+            //     await overlap.save();
+            // }));
     
             car.disponibilite = 'reserver';
             await car.save();
@@ -154,5 +173,43 @@ export class ReservationService {
     
     //     return availablePeriods;
     // }
+    async getReservedDatePeriods(idVoiture: string): Promise<{ dateDebut: Date, dateFin: Date }[]> {
+        const now = new Date();
+        const reservations = await this.reservationModel.find({
+            idVoiture: idVoiture,
+            status: 'confirmer', 
+        }).sort({ dateDebut: 1 }).exec();
+    
+        const reservedPeriods: { dateDebut: Date, dateFin: Date }[] = [];
+    
+        for (const reservation of reservations) {
+            const dateDebut = new Date(reservation.dateDebut);
+            const dateFin = new Date(reservation.dateFin);
+            
+            if (dateDebut >= now && dateFin >= now) {
+                reservedPeriods.push({
+                    dateDebut: dateDebut,
+                    dateFin: dateFin
+                });
+            }
+        }
+    
+        return reservedPeriods;
+    }
+    async getReservationByIdClient(clientId: string): Promise<Reservation[]> {
+        const reservations = await this.reservationModel.find({ idClient: clientId }).exec();
+        if (!reservations || reservations.length === 0) {
+            throw new NotFoundException('Reservations for this client not found');
+        }
+        return reservations;
+    }
+
+    async getReservationByIdCar(carId: string): Promise<Reservation[]> {
+        const reservations = await this.reservationModel.find({ idVoiture: carId }).exec();
+        if (!reservations || reservations.length === 0) {
+            throw new NotFoundException('Reservations for this car not found');
+        }
+        return reservations;
+    }
     
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch, NotFoundException } from '@nestjs/common';
 import { ReservationService } from './reservation.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Reservation } from './reservation.entity';
@@ -37,4 +37,31 @@ export class ReservationController {
     // async getAvailableDatePeriods(@Param('idVoiture') idVoiture: string): Promise<{ dateDebut: Date, dateFin: Date }[]> {
     //     return this.reservationService.getAvailableDatePeriods(idVoiture);
     // }
+    @Get(':idVoiture/reserved-periods')
+    async getReservedDatePeriods(@Param('idVoiture') idVoiture: string) {
+        return this.reservationService.getReservedDatePeriods(idVoiture);
+    }
+    @Get('client/:clientId')
+    async getReservationsByClientId(@Param('clientId') clientId: string): Promise<Reservation[]> {
+        try {
+            return await this.reservationService.getReservationByIdClient(clientId);
+        } catch (error) {
+            if (error instanceof NotFoundException) {
+                throw new NotFoundException(error.message);
+            }
+            throw error;
+        }
+    }
+
+    @Get('car/:carId')
+    async getReservationsByCarId(@Param('carId') carId: string): Promise<Reservation[]> {
+        try {
+            return await this.reservationService.getReservationByIdCar(carId);
+        } catch (error) {
+            if (error instanceof NotFoundException) {
+                throw new NotFoundException(error.message);
+            }
+            throw error;
+        }
+    }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, NotFoundException } from '@nestjs/common';
 import { NoteService } from './note.service';
 import { Note } from './note.entity';
 import { CreateNoteDto, UpdateNoteDto } from './dto/note.dto';
@@ -30,5 +30,28 @@ export class NoteController {
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<Note> {
     return this.noteService.delete(id);
+  }
+  @Get('client/:clientId')
+  async getNoteByIdClient(@Param('clientId') clientId: string): Promise<Note[]> {
+    try {
+      return await this.noteService.getNoteByIdClient(clientId);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message);
+      }
+      throw error;
+    }
+  }
+
+  @Get('car/:carId')
+  async getNoteByIdCar(@Param('carId') carId: string): Promise<Note[]> {
+    try {
+      return await this.noteService.getNoteByIdCar(carId);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message);
+      }
+      throw error;
+    }
   }
 }

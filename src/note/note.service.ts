@@ -42,4 +42,11 @@ export class NoteService {
   async delete(id: string): Promise<Note> {
     return this.noteModel.findByIdAndDelete(id).exec();
   }
+  async getNoteByIdClient(idClient: string): Promise<Note[]> {
+    return this.noteModel.find({ idClient }).exec();
+  }
+
+  async getNoteByIdCar(idVoiture: string): Promise<Note[]> {
+    return this.noteModel.find({ idVoiture }).exec();
+  }
 }
