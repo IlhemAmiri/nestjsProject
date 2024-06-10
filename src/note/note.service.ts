@@ -1,14 +1,14 @@
-import { Injectable,BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Note } from './note.entity';
-import { CreateNoteDto,UpdateNoteDto } from './dto/note.dto';
+import { CreateNoteDto, UpdateNoteDto } from './dto/note.dto';
 
 @Injectable()
 export class NoteService {
   constructor(
     @InjectModel(Note.name) private readonly noteModel: Model<Note>,
-  ) {}
+  ) { }
 
   async create(noteDto: CreateNoteDto): Promise<Note> {
     const { idClient, idVoiture } = noteDto;
@@ -37,7 +37,8 @@ export class NoteService {
       throw new BadRequestException('La note doit être comprise entre 1 et 5.');
     }
 
-    return this.noteModel.findByIdAndUpdate(id, noteDto, { new: true }).exec();
+    return this.noteModel.findOneAndUpdate({ _id: id }, noteDto, { new: true }).exec();
+
   }
   async delete(id: string): Promise<Note> {
     return this.noteModel.findByIdAndDelete(id).exec();
