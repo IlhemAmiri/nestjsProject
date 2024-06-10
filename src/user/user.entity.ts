@@ -16,6 +16,8 @@ export class User extends Document {
     type: String
   })
   role: string;
+  @Prop()
+  image: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
