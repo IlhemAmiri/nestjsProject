@@ -1,7 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-@Schema({ discriminatorKey: 'role' })
+@Schema({ 
+  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }, 
+  discriminatorKey: 'role' 
+})
+
 export class User extends Document {
   @Prop({ required: true, unique: true })
   email: string;
@@ -22,7 +26,7 @@ export class User extends Document {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
-@Schema()
+@Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Client extends User {
   @Prop({ required: true })
   nom: string;

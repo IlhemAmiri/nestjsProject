@@ -3,7 +3,7 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Client } from '../user/user.entity';
 import { Car } from '../car/car.entity';
 
-@Schema()
+@Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Note extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Client', required: true })
   idClient: Client;
