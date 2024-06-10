@@ -1,12 +1,18 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, NotFoundException, UseGuards } from '@nestjs/common';
 import { NoteService } from './note.service';
 import { Note } from './note.entity';
 import { CreateNoteDto, UpdateNoteDto } from './dto/note.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../auth/role.enum';
 
 @Controller('notes')
 export class NoteController {
   constructor(private readonly noteService: NoteService) {}
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Client)
   @Post()
   async create(@Body() createNoteDto: CreateNoteDto): Promise<Note> {
     return this.noteService.create(createNoteDto);
@@ -22,15 +28,21 @@ export class NoteController {
     return this.noteService.findById(id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Client)
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateNoteDto: UpdateNoteDto): Promise<Note> {
     return this.noteService.update(id, updateNoteDto);
   }
 
+
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<Note> {
     return this.noteService.delete(id);
   }
+
+  @UseGuards(JwtAuthGuard)
   @Get('client/:clientId')
   async getNoteByIdClient(@Param('clientId') clientId: string): Promise<Note[]> {
     try {

@@ -33,19 +33,19 @@ export class UserController {
         return this.userService.getAllClients();
     }
 
-    //@UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     @Get('clients/:id')
     async getClient(@Param('id') id: string): Promise<Client> {
         return this.userService.getClient(id);
     }
 
-    //@UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     @Put('clients/:id')
     async updateClient(@Param('id') id: string, @Body() updateClientDto: any): Promise<Client> {
         return this.userService.updateClient(id, updateClientDto);
     }
 
-    //@UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     @Delete('clients/:id')
     async deleteClient(@Param('id') id: string): Promise<string> {
         await this.userService.deleteClient(id);
