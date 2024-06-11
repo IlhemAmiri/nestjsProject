@@ -54,10 +54,10 @@ export class UserService {
     }
 
     async login(email: string, password: string): Promise<{ token: string, email: string, role: string }> {
-        let user = await this.userModel.findOne({ email }).exec();
+        let user = await this.userModel.findOne({ email, deleted_at: null }).exec();
 
         if (!user) {
-            user = await this.clientModel.findOne({ email }).exec();
+            user = await this.clientModel.findOne({ email, deleted_at: null }).exec();
         }
 
         if (!user) {
@@ -77,7 +77,7 @@ export class UserService {
         return { token, email: user.email, role: user.role };
     }
     async updateClient(id: string, updateClientDto: any): Promise<Client> {
-        const updatedClient = await this.clientModel.findByIdAndUpdate(id, updateClientDto, { new: true }).exec();
+        const updatedClient = await this.clientModel.findByIdAndUpdate({ _id: id, deleted_at: null }, updateClientDto, { new: true }).exec();
         if (!updatedClient) {
             throw new NotFoundException('Client not found');
         }
@@ -85,7 +85,7 @@ export class UserService {
     }
 
     async getClient(id: string): Promise<Client> {
-        const client = await this.clientModel.findById(id).exec();
+        const client = await this.clientModel.findById({ _id: id, deleted_at: null }).exec();
         if (!client) {
             throw new NotFoundException('Client not found');
         }
@@ -93,7 +93,7 @@ export class UserService {
     }
 
     async getAllClients(): Promise<Client[]> {
-        return this.clientModel.find().exec();
+        return this.clientModel.find({ deleted_at: null }).exec();
     }
 
     async deleteClient(id: string): Promise<void> {
