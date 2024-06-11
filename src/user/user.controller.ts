@@ -1,10 +1,13 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards,UploadedFile,UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User, Client } from './user.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 
@@ -12,13 +15,21 @@ export class UserController {
     constructor(private readonly userService: UserService) { }
 
     @Post('register')
-    async register(@Body() createUserDto: any): Promise<User> {
-        return this.userService.register(createUserDto);
+    @UseInterceptors(FileInterceptor('image'))
+    async register(@Body() createUserDto: CreateUserDto, @UploadedFile() file: Express.Multer.File): Promise<User> {
+        const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
+        return this.userService.register(createUserDto, imagePath);
     }
 
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.Admin)
     @Get()
     async getAllUsers(): Promise<User[]> {
-        return this.userService.getAllUsers();
+        const users = await this.userService.getAllUsers();
+        return users.map(user => ({
+            ...user.toObject(),
+            image: user.image ? `${user.image}` : null
+        })) as User[];
     }
 
     @Post('login')
@@ -30,19 +41,25 @@ export class UserController {
     @Roles(Role.Admin)
     @Get('clients')
     async getAllClients(): Promise<Client[]> {
-        return this.userService.getAllClients();
+        const clients = await this.userService.getAllClients();
+        return clients.map(client => ({
+            ...client.toObject(),
+            image: client.image ? `${client.image}` : null
+        })) as Client[];
     }
-
     @UseGuards(JwtAuthGuard)
     @Get('clients/:id')
     async getClient(@Param('id') id: string): Promise<Client> {
-        return this.userService.getClient(id);
+        const client = await this.userService.getClient(id);
+        client.image = client.image ? `${client.image}` : null;
+        return client;
     }
-
     @UseGuards(JwtAuthGuard)
+    @UseInterceptors(FileInterceptor('image'))
     @Put('clients/:id')
-    async updateClient(@Param('id') id: string, @Body() updateClientDto: any): Promise<Client> {
-        return this.userService.updateClient(id, updateClientDto);
+    async updateClient(@Param('id') id: string, @Body() updateClientDto: UpdateUserDto, @UploadedFile() file: Express.Multer.File): Promise<Client> {
+        const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
+        return this.userService.updateClient(id, updateClientDto, imagePath);
     }
 
     @UseGuards(JwtAuthGuard)

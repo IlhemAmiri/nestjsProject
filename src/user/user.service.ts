@@ -16,10 +16,10 @@ export class UserService {
         private readonly jwtService: JwtService,
     ) { }
 
-    async register(createUserDto: any): Promise<User> {
+    async register(createUserDto: any,imagePath: string): Promise<User> {
         const { email, password } = createUserDto;
-        const existingUser = await this.userModel.findOne({ email }).exec();
-        const existingClient = await this.clientModel.findOne({ email }).exec();
+        const existingUser = await this.userModel.findOne({ email, deleted_at: null }).exec();
+        const existingClient = await this.clientModel.findOne({ email, deleted_at: null }).exec();
 
         if (existingUser || existingClient) {
             throw new ConflictException('User already exists');
@@ -35,6 +35,7 @@ export class UserService {
             ...createUserDto,
             password: hashedPassword,
             role: role,
+            image: imagePath 
         };
 
         let createdUser;
@@ -76,13 +77,14 @@ export class UserService {
 
         return { token, email: user.email, role: user.role };
     }
-    async updateClient(id: string, updateClientDto: any): Promise<Client> {
-        const updatedClient = await this.clientModel.findByIdAndUpdate({ _id: id, deleted_at: null }, updateClientDto, { new: true }).exec();
+    async updateClient(id: string, updateClientDto: any, imagePath?: string): Promise<Client> {
+        const updateData = imagePath ? { ...updateClientDto, image: imagePath } : updateClientDto;
+        const updatedClient = await this.clientModel.findByIdAndUpdate({ _id: id, deleted_at: null },updateData,{ new: true }).exec();
         if (!updatedClient) {
             throw new NotFoundException('Client not found');
         }
         return updatedClient;
-    }
+    } 
 
     async getClient(id: string): Promise<Client> {
         const client = await this.clientModel.findById({ _id: id, deleted_at: null }).exec();

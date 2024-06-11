@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { MulterModule } from '@nestjs/platform-express';
 import { User, UserSchema, Client, ClientSchema } from './user.entity';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigAppModule } from '../../config.module';
 import { ReservationModule } from '../reservation/reservation.module';
-
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Module({
   imports: [
@@ -21,6 +23,18 @@ import { ReservationModule } from '../reservation/reservation.module';
       { name: Client.name, schema: ClientSchema },
       { name: 'Reservation', schema: ReservationModule }
     ]),
+    MulterModule.register({
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+    }),
   ],
   providers: [UserService],
   controllers: [UserController],
