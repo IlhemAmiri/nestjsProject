@@ -4,6 +4,8 @@ import { Model } from 'mongoose';
 import { Car } from './car.entity';
 import { Reservation } from '../reservation/reservation.entity';
 import { Note } from '../note/note.entity';
+
+
 interface CarDocument extends Car, Document {
   _id: string;
 }
