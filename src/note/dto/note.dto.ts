@@ -21,6 +21,12 @@ export class CreateNoteDto {
 }
 
 export class UpdateNoteDto {
+  @IsNotEmpty()
+  @IsString()
+  readonly idClient?: string;
+  @IsNotEmpty()
+  @IsString()
+  readonly idVoiture?: string;
   @IsOptional()
   @IsNumber()
   @Min(1)
