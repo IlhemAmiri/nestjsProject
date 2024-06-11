@@ -39,6 +39,9 @@ export class Reservation extends Document {
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Car', required: true })
   idVoiture: Car;
+  
+  @Prop({ type: Date, default: null })
+  deleted_at: Date | null;
 }
 
 export const ReservationSchema = SchemaFactory.createForClass(Reservation);

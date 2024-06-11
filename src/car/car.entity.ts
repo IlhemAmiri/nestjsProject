@@ -73,6 +73,9 @@ export class Car extends Document {
 
   @Prop()
   offrePromotion: string;
+  
+  @Prop({ type: Date, default: null })
+  deleted_at: Date | null;
 }
 
 export const CarSchema = SchemaFactory.createForClass(Car);

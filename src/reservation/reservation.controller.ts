@@ -33,9 +33,11 @@ export class ReservationController {
 
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
-    delete(@Param('id') id: string): Promise<void> {
-        return this.reservationService.delete(id);
+    async delete(@Param('id') id: string): Promise<string> {
+        await this.reservationService.delete(id);
+        return `La reservation avec l'identifiant ${id} a été supprimée`;
     }
+
 
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.Admin)
@@ -46,7 +48,7 @@ export class ReservationController {
     ) {
         return this.reservationService.updateReservationStatus(id, status);
     }
-    
+
     // @Get(':idVoiture/disponibilite')
     // async getAvailableDatePeriods(@Param('idVoiture') idVoiture: string): Promise<{ dateDebut: Date, dateFin: Date }[]> {
     //     return this.reservationService.getAvailableDatePeriods(idVoiture);

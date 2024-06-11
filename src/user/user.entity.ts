@@ -22,6 +22,8 @@ export class User extends Document {
   role: string;
   @Prop()
   image: string;
+  @Prop({ type: Date, default: null })
+  deleted_at: Date | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

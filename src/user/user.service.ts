@@ -4,12 +4,15 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User, Client } from './user.entity';
+import { Reservation } from '../reservation/reservation.entity';
+
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectModel(User.name) private userModel: Model<User>,
         @InjectModel(Client.name) private clientModel: Model<Client>,
+        @InjectModel(Reservation.name) private reservationModel: Model<Reservation>,
         private readonly jwtService: JwtService,
     ) { }
 
@@ -94,11 +97,20 @@ export class UserService {
     }
 
     async deleteClient(id: string): Promise<void> {
-        const deletedClient = await this.clientModel.findByIdAndDelete(id).exec();
+        // Supprimer les réservations associées au client
+        
+        await this.reservationModel.updateMany(
+            { idClient: id },
+            { deleted_at: new Date() }
+        ).exec();
+    
+        // Supprimer le client lui-même
+        const deletedClient = await this.clientModel.findByIdAndUpdate(id, { deleted_at: new Date() }).exec();
         if (!deletedClient) {
             throw new NotFoundException('Client not found');
         }
     }
+    
 }
 
 

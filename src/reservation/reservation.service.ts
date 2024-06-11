@@ -70,11 +70,16 @@ export class ReservationService {
     }
 
     async delete(id: string): Promise<void> {
-        const result = await this.reservationModel.deleteOne({ _id: id }).exec();
-        if (result.deletedCount === 0) {
-            throw new NotFoundException('Reservation not found');
+        const result = await this.reservationModel.findByIdAndUpdate(
+          id,
+          { deleted_at: new Date() },
+          { new: true }
+        ).exec();
+    
+        if (!result) {
+          throw new NotFoundException('Reservation not found');
         }
-    }
+      }
     async updateReservationStatus(id: string, status: string): Promise<Reservation> {
         const reservation = await this.reservationModel.findById(id).exec();
         if (!reservation) {

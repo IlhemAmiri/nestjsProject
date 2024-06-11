@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Note } from './note.entity';
@@ -41,7 +41,11 @@ export class NoteService {
 
   }
   async delete(id: string): Promise<Note> {
-    return this.noteModel.findByIdAndDelete(id).exec();
+    const deletedNote = await this.noteModel.findByIdAndUpdate(id, { deleted_at: new Date() }, { new: true }).exec();
+    if (!deletedNote) {
+      throw new NotFoundException('Note not found');
+    }
+    return deletedNote;
   }
   async getNoteByIdClient(idClient: string): Promise<Note[]> {
     return this.noteModel.find({ idClient }).exec();

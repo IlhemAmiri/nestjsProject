@@ -16,6 +16,8 @@ export class Note extends Document {
 
   @Prop()
   commentaire: string;
+  @Prop({ type: Date, default: null })
+  deleted_at: Date | null;
 }
 
 export const NoteSchema = SchemaFactory.createForClass(Note);

@@ -38,8 +38,9 @@ export class NoteController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async delete(@Param('id') id: string): Promise<Note> {
-    return this.noteService.delete(id);
+  async delete(@Param('id') id: string): Promise<string> {
+    const deletedNote = await this.noteService.delete(id);
+    return `La note avec l'identifiant ${id} a été supprimée`;
   }
 
   @UseGuards(JwtAuthGuard)

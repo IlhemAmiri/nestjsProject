@@ -5,11 +5,13 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigAppModule } from '../../config.module';
+import { ReservationModule } from '../reservation/reservation.module';
 
 
 @Module({
   imports: [
     ConfigAppModule,
+    ReservationModule,
     JwtModule.register({
         secret: process.env.JWT_SECRET,
         signOptions: { expiresIn: '1h' },
@@ -17,6 +19,7 @@ import { ConfigAppModule } from '../../config.module';
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Client.name, schema: ClientSchema },
+      { name: 'Reservation', schema: ReservationModule }
     ]),
   ],
   providers: [UserService],
