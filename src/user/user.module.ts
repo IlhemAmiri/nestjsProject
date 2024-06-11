@@ -25,7 +25,7 @@ import { extname } from 'path';
     ]),
     MulterModule.register({
       storage: diskStorage({
-        destination: './uploads',
+        destination: './dist/uploads',
         filename: (req, file, cb) => {
           const randomName = Array(32)
             .fill(null)
