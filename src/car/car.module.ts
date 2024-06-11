@@ -7,10 +7,12 @@ import { Car, CarSchema } from './car.entity';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { ReservationModule } from '../reservation/reservation.module';
+import { NoteModule } from '../note/note.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Car.name, schema: CarSchema }]),
     ReservationModule,
+    NoteModule,
     MulterModule.register({
       storage: diskStorage({
         destination: './uploads',
@@ -24,7 +26,8 @@ import { ReservationModule } from '../reservation/reservation.module';
       }),
     }),
     MongooseModule.forFeature([
-      { name: 'Reservation', schema: ReservationModule }
+      { name: 'Reservation', schema: ReservationModule },
+      { name: 'Note', schema: NoteModule },
     ]),
   ],
   controllers: [CarController],

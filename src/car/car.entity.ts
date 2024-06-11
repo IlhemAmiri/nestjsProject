@@ -69,9 +69,6 @@ export class Car extends Document {
   note: number;
 
   @Prop()
-  commentaires: string;
-
-  @Prop()
   offrePromotion: string;
   
   @Prop({ type: Date, default: null })
