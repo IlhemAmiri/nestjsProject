@@ -7,6 +7,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { CreateCarDto } from './dto/create-car.dto';
+import { UpdateCarDto } from './dto/update-car.dto';
 @Controller('cars')
 export class CarController {
   constructor(private readonly carService: CarService) {}
@@ -16,9 +17,6 @@ export class CarController {
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   async create(@Body() createCarDto: CreateCarDto, @UploadedFile() file: Express.Multer.File): Promise<Car> {
-    if (!file){
-      throw new NotFoundException('Image not found');
-    }
     const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
     return this.carService.create(createCarDto, imagePath);
   }
@@ -26,8 +24,8 @@ export class CarController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Put(':id')
-  @UseInterceptors(FileInterceptor('file'))
-  async update(@Param('id') id: string, @Body() updateCarDto: any, @UploadedFile() file: Express.Multer.File): Promise<Car> {
+  @UseInterceptors(FileInterceptor('image'))
+  async update(@Param('id') id: string, @Body() updateCarDto: UpdateCarDto, @UploadedFile() file: Express.Multer.File): Promise<Car> {
     const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
     return this.carService.update(id, updateCarDto, imagePath);
   }
