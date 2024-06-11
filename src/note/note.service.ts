@@ -15,29 +15,46 @@ export class NoteService {
   ) { }
 
   async create(noteDto: CreateNoteDto): Promise<Note> {
-    const { idClient, idVoiture } = noteDto;
+    const { idClient, idVoiture, note } = noteDto;
 
     // Vérifier si le client existe
-    const clientExists = await this.clientModel.exists({ _id: idClient }).exec();
+    const clientExists = await this.clientModel.exists({ _id: idClient, deleted_at: null }).exec();
     if (!clientExists) {
-      throw new BadRequestException('Le client spécifié n\'existe pas.');
+        throw new NotFoundException('Client not found or deleted');
     }
 
     // Vérifier si la voiture existe
-    const carExists = await this.carModel.exists({ _id: idVoiture }).exec();
+    const carExists = await this.carModel.exists({ _id: idVoiture, deleted_at: null }).exec();
     if (!carExists) {
-      throw new BadRequestException('La voiture spécifiée n\'existe pas.');
+        throw new NotFoundException('Car not found or deleted');
     }
 
     // Vérifier si une note existe déjà pour la voiture donnée par le client et n'est pas supprimée
     const existingNote = await this.noteModel.findOne({ idClient, idVoiture, deleted_at: null }).exec();
     if (existingNote) {
-      throw new BadRequestException('Le client a déjà donné une note pour cette voiture.');
+        throw new BadRequestException('Le client a déjà donné une note pour cette voiture.');
     }
 
     const createdNote = new this.noteModel(noteDto);
-    return createdNote.save();
-  }
+    const savedNote = await createdNote.save();
+
+    // Calculer la nouvelle note moyenne pour la voiture
+    const averageNote = await this.calculateAverageNoteForCar(idVoiture);
+
+    // Mettre à jour la note moyenne de la voiture dans la collection de voitures
+    await this.carModel.findByIdAndUpdate(idVoiture, { note: averageNote }).exec();
+
+    return savedNote;
+}
+
+private async calculateAverageNoteForCar(carId: string): Promise<number> {
+    const notes = await this.noteModel.find({ idVoiture: carId, deleted_at: null }).exec();
+    if (notes.length === 0) {
+        return 0;
+    }
+    const total = notes.reduce((sum, note) => sum + note.note, 0);
+    return total / notes.length;
+}
 
   async findAll(): Promise<Note[]> {
     return this.noteModel.find({ deleted_at: null }).exec();
