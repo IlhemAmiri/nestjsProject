@@ -4,21 +4,26 @@ import { Model } from 'mongoose';
 import { Reservation } from './reservation.entity';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Car } from '../car/car.entity';
+import { Client } from '../user/user.entity';
 
 @Injectable()
 export class ReservationService {
     constructor(
         @InjectModel(Reservation.name) private reservationModel: Model<Reservation>,
         @InjectModel(Car.name) private carModel: Model<Car>,
+        @InjectModel(Client.name) private clientModel: Model<Client>,
     ) { }
 
     async create(createReservationDto: CreateReservationDto): Promise<Reservation> {
         const now = new Date();
         const car = await this.carModel.findById(createReservationDto.idVoiture).exec();
-        if (!car) {
+        if (!car || car.deleted_at !== null ) {
             throw new NotFoundException('Car not found');
         }
-    
+        const client = await this.clientModel.findById(createReservationDto.idClient).exec();
+        if (!client || client.deleted_at !== null) {
+            throw new NotFoundException('Client not found');
+        }
         const overlappingReservation = await this.reservationModel.findOne({
             idVoiture: createReservationDto.idVoiture,
             status: 'confirmer', // Rechercher uniquement les réservations confirmées
@@ -58,11 +63,11 @@ export class ReservationService {
     
 
     async findAll(): Promise<Reservation[]> {
-        return this.reservationModel.find().populate('idClient').populate('idVoiture').exec();
+        return this.reservationModel.find({ deleted_at: null }).populate('idClient').populate('idVoiture').exec();
     }
 
     async findOne(id: string): Promise<Reservation> {
-        const reservation = await this.reservationModel.findById(id).populate('idClient').populate('idVoiture').exec();
+        const reservation = await this.reservationModel.findById({ _id: id, deleted_at: null }).populate('idClient').populate('idVoiture').exec();
         if (!reservation) {
             throw new NotFoundException('Reservation not found');
         }
@@ -72,7 +77,7 @@ export class ReservationService {
     async delete(id: string): Promise<void> {
         const result = await this.reservationModel.findByIdAndUpdate(
           id,
-          { deleted_at: new Date() },
+          { deleted_at: new Date(), status: 'annule' },
           { new: true }
         ).exec();
     
@@ -81,7 +86,7 @@ export class ReservationService {
         }
       }
     async updateReservationStatus(id: string, status: string): Promise<Reservation> {
-        const reservation = await this.reservationModel.findById(id).exec();
+        const reservation = await this.reservationModel.findById({ _id: id, deleted_at: null }).exec();
         if (!reservation) {
             throw new NotFoundException('Reservation not found');
         }
@@ -183,6 +188,7 @@ export class ReservationService {
         const reservations = await this.reservationModel.find({
             idVoiture: idVoiture,
             status: 'confirmer', 
+            deleted_at: null ,
         }).sort({ dateDebut: 1 }).exec();
     
         const reservedPeriods: { dateDebut: Date, dateFin: Date }[] = [];
@@ -202,7 +208,7 @@ export class ReservationService {
         return reservedPeriods;
     }
     async getReservationByIdClient(clientId: string): Promise<Reservation[]> {
-        const reservations = await this.reservationModel.find({ idClient: clientId }).exec();
+        const reservations = await this.reservationModel.find({ idClient: clientId, deleted_at: null }).exec();
         if (!reservations || reservations.length === 0) {
             throw new NotFoundException('Reservations for this client not found');
         }
@@ -210,7 +216,7 @@ export class ReservationService {
     }
 
     async getReservationByIdCar(carId: string): Promise<Reservation[]> {
-        const reservations = await this.reservationModel.find({ idVoiture: carId }).exec();
+        const reservations = await this.reservationModel.find({ idVoiture: carId, deleted_at: null }).exec();
         if (!reservations || reservations.length === 0) {
             throw new NotFoundException('Reservations for this car not found');
         }
