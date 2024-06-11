@@ -77,7 +77,7 @@ export class ReservationService {
     async delete(id: string): Promise<void> {
         const result = await this.reservationModel.findByIdAndUpdate(
           id,
-          { deleted_at: new Date(), status: 'annule' },
+          { deleted_at: new Date(), status: 'annuler' },
           { new: true }
         ).exec();
     
