@@ -35,7 +35,7 @@ export class CarController {
     const cars = await this.carService.findAll();
     return cars.map(car => ({
       ...car.toObject(),
-      image: car.image ? `http://localhost:3001${car.image}` : null,
+      image: car.image ? `${car.image}` : null,
     }));
   }
 
@@ -44,7 +44,7 @@ export class CarController {
     const car = await this.carService.findOne(id);
     return {
       ...car.toObject(),
-      image: car.image ? `http://localhost:3001${car.image}` : null,
+      image: car.image ? `${car.image}` : null,
     };
   }
 

@@ -13,21 +13,9 @@ import { NoteModule } from '../note/note.module';
     MongooseModule.forFeature([{ name: Car.name, schema: CarSchema }]),
     ReservationModule,
     NoteModule,
-    MulterModule.register({
-      storage: diskStorage({
-        destination: './dist/uploads',
-        filename: (req, file, cb) => {
-          const randomName = Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('');
-          cb(null, `${randomName}${extname(file.originalname)}`);
-        },
-      }),
-    }),
     // MulterModule.register({
     //   storage: diskStorage({
-    //     destination: './uploads', // Première destination
+    //     destination: './dist/uploads',
     //     filename: (req, file, cb) => {
     //       const randomName = Array(32)
     //         .fill(null)
@@ -37,6 +25,18 @@ import { NoteModule } from '../note/note.module';
     //     },
     //   }),
     // }),
+    MulterModule.register({
+      storage: diskStorage({
+        destination: './uploads', // Première destination
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+    }),
     MongooseModule.forFeature([
       { name: 'Reservation', schema: ReservationModule },
       { name: 'Note', schema: NoteModule },

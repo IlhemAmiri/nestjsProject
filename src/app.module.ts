@@ -27,7 +27,12 @@ import { PaymentModule } from './payment/payment.module';
     NoteModule,
     AuthModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'), 
+      rootPath: 'C:/Users/ilhem/OneDrive/Bureau/locationV/location-voiture/uploads',  // Chemin absolu vers le dossier uploads
+      serveRoot: '/uploads', // Le chemin URL sous lequel les fichiers seront servis
+      serveStaticOptions: {
+        redirect: false, // Désactiver les redirections par défaut
+        index: false // Désactiver la gestion des index par défaut
+      },
     }),
     PaymentModule,
   ],
