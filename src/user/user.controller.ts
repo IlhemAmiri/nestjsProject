@@ -17,9 +17,10 @@ export class UserController {
     @Post('register')
     @UseInterceptors(FileInterceptor('image'))
     async register(@Body() createUserDto: CreateUserDto, @UploadedFile() file: Express.Multer.File): Promise<User> {
-        const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
-        return this.userService.register(createUserDto, imagePath);
+      const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
+      return this.userService.register(createUserDto, imagePath);
     }
+    
 
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.Admin)
