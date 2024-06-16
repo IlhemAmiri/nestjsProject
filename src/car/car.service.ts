@@ -39,12 +39,19 @@ export class CarService {
     return updatedCar;
   }
 
-  async findAll(): Promise<any[]> {
-    const cars = await this.carModel.find({ deleted_at: null }).exec();
+  async findAll(page: number, limit: number): Promise<{ data: any[], total: number }> {
+    const skip = (page - 1) * limit;
+    const total = await this.carModel.countDocuments({ deleted_at: null }).exec();
+    const cars = await this.carModel.find({ deleted_at: null })
+      .skip(skip)
+      .limit(limit)
+      .exec();
+  
     for (const car of cars) {
       car.note = await this.calculateAverageNote(car._id);
     }
-    return cars;
+  
+    return { data: cars, total };
   }
 
 

@@ -31,13 +31,22 @@ export class CarController {
   }
 
   @Get()
-  async findAll(): Promise<Car[]> {
-    const cars = await this.carService.findAll();
-    return cars.map(car => ({
-      ...car.toObject(),
-      image: car.image ? `${car.image}` : null,
-    }));
+  async findAll(
+    @Query('page') page: number = 1, 
+    @Query('limit') limit: number = 12
+  ): Promise<{ data: Car[], total: number, page: number, limit: number }> {
+    const { data, total } = await this.carService.findAll(page, limit);
+    return {
+      data: data.map(car => ({
+        ...car.toObject(),
+        image: car.image ? `${car.image}` : null,
+      })),
+      total,
+      page,
+      limit,
+    };
   }
+  
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Car> {
@@ -61,7 +70,7 @@ export class CarController {
     const cars = await this.carService.search(query);
     return cars.map(car => ({
       ...car.toObject(),
-      image: car.image ? `http://localhost:3001${car.image}` : null,
+      image: car.image ? `${car.image}` : null,
     }));
   }
 }
