@@ -54,7 +54,7 @@ export class UserService {
         return [...users, ...clients];
     }
 
-    async login(email: string, password: string): Promise<{ token: string, email: string, role: string }> {
+    async login(email: string, password: string): Promise<{ token: string, email: string, role: string, userId: string }> {
         let user = await this.userModel.findOne({ email, deleted_at: null }).exec();
 
         if (!user) {
@@ -75,7 +75,7 @@ export class UserService {
         const payload = { email: user.email, sub: user._id, role: user.role };
         const token = this.jwtService.sign(payload);
 
-        return { token, email: user.email, role: user.role };
+        return { token, email: user.email, role: user.role,  userId: user._id.toString() };
     }
     async updateClient(id: string, updateClientDto: any, imagePath?: string): Promise<Client> {
         const updateData = imagePath ? { ...updateClientDto, image: imagePath } : updateClientDto;
