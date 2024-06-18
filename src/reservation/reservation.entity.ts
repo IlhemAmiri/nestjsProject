@@ -17,18 +17,24 @@ export class Reservation extends Document {
   @Prop({ required: true })
   chauffeur: boolean;
 
-  @Prop({
-    required: true,
-    enum: ['cash', 'card'],
-    type: String
-  })
-  methodePaiement: string;
+  // @Prop({
+  //   required: true,
+  //   enum: ['cash', 'card'],
+  //   type: String
+  // })
+  // methodePaiement: string;
+  @Prop({ required: true })
+  lieuRamassage: string;
+
+  @Prop({ required: true })
+  destination: string;
+
 
   @Prop()
   commentaire: string;
 
-  @Prop({ 
-    required: true, 
+  @Prop({
+    required: true,
     enum: ['confirmer', 'annuler', 'en Attent'],
     default: 'en Attent'
   })
@@ -39,7 +45,7 @@ export class Reservation extends Document {
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Car', required: true })
   idVoiture: Car;
-  
+
   @Prop({ type: Date, default: null })
   deleted_at: Date | null;
 }

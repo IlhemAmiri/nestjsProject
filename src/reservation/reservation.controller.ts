@@ -60,8 +60,7 @@ export class ReservationController {
         return this.reservationService.getReservedDatePeriods(idVoiture);
     }
 
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(Role.Admin)
+    @UseGuards(JwtAuthGuard)
     @Get('client/:clientId')
     async getReservationsByClientId(@Param('clientId') clientId: string): Promise<Reservation[]> {
         try {

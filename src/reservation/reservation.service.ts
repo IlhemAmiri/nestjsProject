@@ -208,7 +208,7 @@ export class ReservationService {
         return reservedPeriods;
     }
     async getReservationByIdClient(clientId: string): Promise<Reservation[]> {
-        const reservations = await this.reservationModel.find({ idClient: clientId, deleted_at: null }).exec();
+        const reservations = await this.reservationModel.find({ idClient: clientId, deleted_at: null }).populate('idVoiture').exec();
         if (!reservations || reservations.length === 0) {
             throw new NotFoundException('Reservations for this client not found');
         }
