@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, Query, UploadedFile, UseInterceptors, UseGuards, NotFoundException  } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, Query, UploadedFile, UseInterceptors, UseGuards, NotFoundException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CarService } from './car.service';
 import { Car } from './car.entity';
@@ -8,6 +8,8 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
+import { SearchCarDto } from './dto/search-car.dto';
+
 @Controller('cars')
 export class CarController {
   constructor(private readonly carService: CarService) {}
@@ -32,7 +34,7 @@ export class CarController {
 
   @Get()
   async findAll(
-    @Query('page') page: number = 1, 
+    @Query('page') page: number = 1,
     @Query('limit') limit: number = 12
   ): Promise<{ data: Car[], total: number, page: number, limit: number }> {
     const { data, total } = await this.carService.findAll(page, limit);
@@ -40,13 +42,12 @@ export class CarController {
       data: data.map(car => ({
         ...car.toObject(),
         image: car.image ? `${car.image}` : null,
-      })),
+      }) as Car),
       total,
       page,
       limit,
     };
   }
-  
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Car> {
@@ -54,7 +55,7 @@ export class CarController {
     return {
       ...car.toObject(),
       image: car.image ? `${car.image}` : null,
-    };
+    } as Car;
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -62,15 +63,15 @@ export class CarController {
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<string> {
     await this.carService.delete(id);
-    return `La voiture avec l'identifiant ${id} a été  supprimée`;
+    return `La voiture avec l'identifiant ${id} a été supprimée`;
   }
 
   @Get('search/search')
-  async search(@Query() query: any): Promise<Car[]> {
+  async search(@Query() query: SearchCarDto): Promise<Car[]> {
     const cars = await this.carService.search(query);
     return cars.map(car => ({
       ...car.toObject(),
       image: car.image ? `${car.image}` : null,
-    }));
+    })) as Car[];
   }
 }

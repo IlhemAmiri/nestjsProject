@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Car } from './car.entity';
 import { Reservation } from '../reservation/reservation.entity';
 import { Note } from '../note/note.entity';
+import { SearchCarDto } from './dto/search-car.dto';
 
 
 interface CarDocument extends Car, Document {
@@ -82,7 +83,7 @@ export class CarService {
     return deletedCar;
   }
 
-  async search(query: any): Promise<any[]> {
+  async search(query: SearchCarDto): Promise<Car[]> {
     const filter: any = { deleted_at: null };
 
     if (query.marque) {
@@ -107,7 +108,6 @@ export class CarService {
     }
     return cars;
   }
-
   private async calculateAverageNote(carId: string): Promise<number> {
     const notes = await this.noteModel.find({ idVoiture: carId, deleted_at: null }).exec();
     if (notes.length === 0) {
