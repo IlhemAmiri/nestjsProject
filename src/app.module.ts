@@ -10,8 +10,8 @@ import { ReservationModule } from './reservation/reservation.module';
 import { NoteModule } from './note/note.module';
 import { AuthModule } from './auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { PaymentModule } from './payment/payment.module';
+import { BlogModule } from './blog/blog.module';
 
 @Module({
   imports: [
@@ -35,6 +35,7 @@ import { PaymentModule } from './payment/payment.module';
       },
     }),
     PaymentModule,
+    BlogModule,
   ],
   controllers: [AppController],
   providers: [AppService],

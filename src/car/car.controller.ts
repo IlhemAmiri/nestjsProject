@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, Query, UploadedFile, UseInterceptors, UseGuards, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, Query, UploadedFile, UseInterceptors, UseGuards } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CarService } from './car.service';
 import { Car } from './car.entity';
