@@ -46,6 +46,9 @@ export class CreateCarDto {
   @IsUrl()
   @IsOptional()
   image?: string;
+  image2?: string;
+  image3?: string;
+  image4?: string;
 
   @IsString()
   @IsOptional()

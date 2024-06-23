@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, Query, UploadedFile, UseInterceptors, UseGuards } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Get, Post, Body, Param, Put, Delete, Query, UploadedFiles, UseInterceptors, UseGuards } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { CarService } from './car.service';
 import { Car } from './car.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -17,19 +17,19 @@ export class CarController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Post()
-  @UseInterceptors(FileInterceptor('image'))
-  async create(@Body() createCarDto: CreateCarDto, @UploadedFile() file: Express.Multer.File): Promise<Car> {
-    const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
-    return this.carService.create(createCarDto, imagePath);
+  @UseInterceptors(FilesInterceptor('images', 4))  // Adjust the field name to 'images' and limit to 4 files
+  async create(@Body() createCarDto: CreateCarDto, @UploadedFiles() files: Express.Multer.File[]): Promise<Car> {
+    const imagePaths = files.map(file => `http://localhost:3001/uploads/${file.filename}`);
+    return this.carService.create(createCarDto, imagePaths);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   @Put(':id')
-  @UseInterceptors(FileInterceptor('image'))
-  async update(@Param('id') id: string, @Body() updateCarDto: UpdateCarDto, @UploadedFile() file: Express.Multer.File): Promise<Car> {
-    const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
-    return this.carService.update(id, updateCarDto, imagePath);
+  @UseInterceptors(FilesInterceptor('images', 4))  // Adjust the field name to 'images' and limit to 4 files
+  async update(@Param('id') id: string, @Body() updateCarDto: UpdateCarDto, @UploadedFiles() files: Express.Multer.File[]): Promise<Car> {
+    const imagePaths = files ? files.map(file => `http://localhost:3001/uploads/${file.filename}`) : null;
+    return this.carService.update(id, updateCarDto, imagePaths);
   }
 
   @Get()

@@ -63,6 +63,15 @@ export class Car extends Document {
   image: string;
 
   @Prop()
+  image2: string;
+
+  @Prop()
+  image3: string;
+
+  @Prop()
+  image4: string;
+
+  @Prop()
   conditionDeLocation: string;
 
   @Prop()

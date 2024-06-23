@@ -19,16 +19,18 @@ export class CarService {
     @InjectModel(Note.name) private readonly noteModel: Model<Note>,
   ) { }
 
-  async create(createCarDto: any, imagePath: string): Promise<Car> {
-    if (!imagePath) {
-      throw new NotFoundException('Image not found');
+  async create(createCarDto: any, imagePaths: string[]): Promise<Car> {
+    if (!imagePaths || imagePaths.length === 0) {
+      throw new NotFoundException('Images not found');
     }
-    const createdCar = new this.carModel({ ...createCarDto, image: imagePath });
+    const createdCar = new this.carModel({ ...createCarDto, image: imagePaths[0], image2: imagePaths[1], image3: imagePaths[2], image4: imagePaths[3] });
     return createdCar.save();
   }
 
-  async update(id: string, updateCarDto: any, imagePath?: string): Promise<CarDocument> {
-    const updateData = imagePath ? { ...updateCarDto, image: imagePath } : updateCarDto;
+  async update(id: string, updateCarDto: any, imagePaths?: string[]): Promise<CarDocument> {
+    const updateData = imagePaths && imagePaths.length > 0 
+      ? { ...updateCarDto, image: imagePaths[0], image2: imagePaths[1], image3: imagePaths[2], image4: imagePaths[3] }
+      : updateCarDto;
     const updatedCar = await this.carModel.findByIdAndUpdate(
       { _id: id, deleted_at: null },
       updateData,
