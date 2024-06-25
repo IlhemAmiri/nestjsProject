@@ -58,11 +58,15 @@ export class UserController {
     @UseGuards(JwtAuthGuard)
     @UseInterceptors(FileInterceptor('image'))
     @Put('clients/:id')
-    async updateClient(@Param('id') id: string, @Body() updateClientDto: UpdateUserDto, @UploadedFile() file: Express.Multer.File): Promise<Client> {
-        const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
-        return this.userService.updateClient(id, updateClientDto, imagePath);
+    async updateClient(
+      @Param('id') id: string,
+      @Body() updateClientDto: UpdateUserDto,
+      @UploadedFile() file: Express.Multer.File
+    ): Promise<Client> {
+      const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
+      return this.userService.updateClient(id, updateClientDto, imagePath);
     }
-
+    
     @UseGuards(JwtAuthGuard)
     @Delete('clients/:id')
     async deleteClient(@Param('id') id: string): Promise<string> {

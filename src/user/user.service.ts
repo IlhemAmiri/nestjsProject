@@ -77,14 +77,20 @@ export class UserService {
 
         return { token, email: user.email, role: user.role,  userId: user._id.toString() };
     }
+    
     async updateClient(id: string, updateClientDto: any, imagePath?: string): Promise<Client> {
         const updateData = imagePath ? { ...updateClientDto, image: imagePath } : updateClientDto;
-        const updatedClient = await this.clientModel.findByIdAndUpdate({ _id: id, deleted_at: null },updateData,{ new: true }).exec();
+        const updatedClient = await this.clientModel.findOneAndUpdate(
+          { _id: id, deleted_at: null },
+          updateData,
+          { new: true }
+        ).exec();
         if (!updatedClient) {
-            throw new NotFoundException('Client not found');
+          throw new NotFoundException('Client not found');
         }
         return updatedClient;
-    } 
+      }
+      
 
     async getClient(id: string): Promise<Client> {
         const client = await this.clientModel.findById({ _id: id, deleted_at: null }).exec();
