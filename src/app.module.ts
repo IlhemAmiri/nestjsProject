@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { PaymentModule } from './payment/payment.module';
 import { BlogModule } from './blog/blog.module';
+import { FavouriteCarModule } from './favourite-car/favourite-car.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { BlogModule } from './blog/blog.module';
     }),
     PaymentModule,
     BlogModule,
+    FavouriteCarModule,
   ],
   controllers: [AppController],
   providers: [AppService],
