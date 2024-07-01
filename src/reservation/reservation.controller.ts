@@ -43,11 +43,12 @@ export class ReservationController {
     @Roles(Role.Admin)
     @Patch(':id/status')
     async updateReservationStatus(
-        @Param('id') id: string,
-        @Body('status') status: string
+      @Param('id') id: string,
+      @Body('status') status: string
     ) {
-        return this.reservationService.updateReservationStatus(id, status);
+      return this.reservationService.updateReservationStatus(id, status);
     }
+    
 
     // @Get(':idVoiture/disponibilite')
     // async getAvailableDatePeriods(@Param('idVoiture') idVoiture: string): Promise<{ dateDebut: Date, dateFin: Date }[]> {

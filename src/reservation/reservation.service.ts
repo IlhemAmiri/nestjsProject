@@ -17,7 +17,7 @@ export class ReservationService {
     async create(createReservationDto: CreateReservationDto): Promise<Reservation> {
         const now = new Date();
         const car = await this.carModel.findById(createReservationDto.idVoiture).exec();
-        if (!car || car.deleted_at !== null ) {
+        if (!car || car.deleted_at !== null) {
             throw new NotFoundException('Car not found');
         }
         const client = await this.clientModel.findById(createReservationDto.idClient).exec();
@@ -32,11 +32,11 @@ export class ReservationService {
                 { dateDebut: { $gte: createReservationDto.dateDebut, $lt: createReservationDto.dateFin } }
             ]
         }).exec();
-    
+
         if (overlappingReservation) {
             throw new BadRequestException('Start date is within another confirmed reservation period');
         }
-    
+
         const dateDebut = new Date(createReservationDto.dateDebut);
         const dateFin = new Date(createReservationDto.dateFin);
         if (dateDebut >= dateFin) {
@@ -47,20 +47,20 @@ export class ReservationService {
         }
         const duration = Math.ceil((dateFin.getTime() - dateDebut.getTime()) / (1000 * 3600 * 24));
         const tarifTotale = car.prixParJ * duration;
-    
+
         const reservation = new this.reservationModel({
             ...createReservationDto,
             tarifTotale,
         });
-    
+
         if (createReservationDto.status === 'confirmer') {
             car.disponibilite = 'reserver';
             await car.save();
         }
-    
+
         return reservation.save();
     }
-    
+
 
     async findAll(): Promise<Reservation[]> {
         return this.reservationModel.find({ deleted_at: null }).populate('idClient').populate('idVoiture').exec();
@@ -76,74 +76,49 @@ export class ReservationService {
 
     async delete(id: string): Promise<void> {
         const result = await this.reservationModel.findByIdAndUpdate(
-          id,
-          { deleted_at: new Date(), status: 'annuler' },
-          { new: true }
+            id,
+            { deleted_at: new Date(), status: 'annuler' },
+            { new: true }
         ).exec();
-    
+
         if (!result) {
-          throw new NotFoundException('Reservation not found');
-        }
-      }
-    async updateReservationStatus(id: string, status: string): Promise<Reservation> {
-        const reservation = await this.reservationModel.findById({ _id: id, deleted_at: null }).exec();
-        if (!reservation) {
             throw new NotFoundException('Reservation not found');
+        }
+    }
+    async updateReservationStatus(id: string, status: string): Promise<Reservation> {
+        const reservation = await this.reservationModel.findById(id).exec();
+        if (!reservation) {
+          throw new NotFoundException('Reservation not found');
         }
     
         if (status === 'confirmer') {
-            const car = await this.carModel.findById(reservation.idVoiture).exec();
-            if (!car) {
-                throw new NotFoundException('Car not found');
-            }
-            // if (car.disponibilite !== 'disponible') {
-            //     throw new BadRequestException('Car is not available');
-            // }
-            // Vérifier les conflits de dates uniquement si la réservation est confirmée
-            const overlappingReservation = await this.reservationModel.findOne({
-                idVoiture: reservation.idVoiture,
-                status: 'confirmer',
-                $and: [
-                    { _id: { $ne: reservation._id } }, // Exclure la réservation actuelle
-                    {
-                        $or: [
-                            { dateDebut: { $lt: reservation.dateFin }, dateFin: { $gt: reservation.dateDebut } },
-                            { dateDebut: { $gte: reservation.dateDebut, $lt: reservation.dateFin } }
-                        ]
-                    }
-                ]
-            }).exec();
+          const car = await this.carModel.findById(reservation.idVoiture).exec();
+          if (!car) {
+            throw new NotFoundException('Car not found');
+          }
+          const overlappingReservation = await this.reservationModel.findOne({
+            idVoiture: reservation.idVoiture,
+            status: 'confirmer',
+            _id: { $ne: reservation._id }, // Exclude the current reservation
+            $or: [
+              { dateDebut: { $lt: reservation.dateFin }, dateFin: { $gt: reservation.dateDebut } },
+              { dateDebut: { $gte: reservation.dateDebut, $lt: reservation.dateFin } }
+            ]
+          }).exec();
     
-            if (overlappingReservation) {
-                throw new BadRequestException('Updating status results in overlapping reservation periods');
-            }
-            // const overlappingReservations = await this.reservationModel.find({
-            //     idVoiture: reservation.idVoiture,
-            //     status: { $in: ['en attente', 'confirmer'] },
-            //     $and: [
-            //         { _id: { $ne: reservation._id } }, // Exclude the current reservation
-            //         {
-            //             $or: [
-            //                 { dateDebut: { $lt: reservation.dateFin }, dateFin: { $gt: reservation.dateDebut } },
-            //                 { dateDebut: { $gte: reservation.dateDebut, $lt: reservation.dateFin } }
-            //             ]
-            //         }
-            //     ]
-            // }).exec();
+          if (overlappingReservation) {
+            throw new BadRequestException('Updating status results in overlapping reservation periods');
+          }
     
-            // // Cancel overlapping reservations
-            // await Promise.all(overlappingReservations.map(async (overlap) => {
-            //     overlap.status = 'annuler';
-            //     await overlap.save();
-            // }));
-    
-            car.disponibilite = 'reserver';
-            await car.save();
+          car.disponibilite = 'reserver';
+          await car.save();
         }
     
+        // Update only the status field
         reservation.status = status;
-        return reservation.save();
-    }
+        return reservation.save({ validateBeforeSave: false });
+      }
+    
     // async getAvailableDatePeriods(idVoiture: string, limit: number = 3): Promise<{ dateDebut: Date, dateFin: Date }[]> {
     //     const now = new Date();
     //     const reservations = await this.reservationModel.find({
@@ -151,9 +126,9 @@ export class ReservationService {
     //         status: 'confirmer', // Seules les réservations confirmées sont prises en compte
     //         dateFin: { $gte: now } // Seules les réservations dont la date de fin est après la date actuelle sont prises en compte
     //     }).sort({ dateFin: 1 }).limit(limit).exec();
-    
+
     //     const availablePeriods: { dateDebut: Date, dateFin: Date }[] = [];
-    
+
     //     if (reservations.length === 0) {
     //         // S'il n'y a pas de réservations futures, retourner trois périodes de dates à partir de maintenant
     //         for (let i = 0; i < limit; i++) {
@@ -169,7 +144,7 @@ export class ReservationService {
     //             const endDate = new Date(reservations[i].dateFin);
     //             const nextDateDebut = new Date(reservations[i + 1].dateDebut);
     //             const daysDiff = Math.ceil((nextDateDebut.getTime() - endDate.getTime()) / (1000 * 3600 * 24));
-    
+
     //             // Ajouter les périodes de dates disponibles entre les réservations à la liste
     //             for (let j = 1; j <= daysDiff && availablePeriods.length < limit; j++) {
     //                 const dateDebut = new Date(endDate);
@@ -180,23 +155,23 @@ export class ReservationService {
     //             }
     //         }
     //     }
-    
+
     //     return availablePeriods;
     // }
     async getReservedDatePeriods(idVoiture: string): Promise<{ dateDebut: Date, dateFin: Date }[]> {
         const now = new Date();
         const reservations = await this.reservationModel.find({
             idVoiture: idVoiture,
-            status: 'confirmer', 
-            deleted_at: null ,
+            status: 'confirmer',
+            deleted_at: null,
         }).sort({ dateDebut: 1 }).exec();
-    
+
         const reservedPeriods: { dateDebut: Date, dateFin: Date }[] = [];
-    
+
         for (const reservation of reservations) {
             const dateDebut = new Date(reservation.dateDebut);
             const dateFin = new Date(reservation.dateFin);
-            
+
             if (dateDebut >= now && dateFin >= now) {
                 reservedPeriods.push({
                     dateDebut: dateDebut,
@@ -204,7 +179,7 @@ export class ReservationService {
                 });
             }
         }
-    
+
         return reservedPeriods;
     }
     async getReservationByIdClient(clientId: string): Promise<Reservation[]> {
@@ -222,5 +197,5 @@ export class ReservationService {
         }
         return reservations;
     }
-    
+
 }

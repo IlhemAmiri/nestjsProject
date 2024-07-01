@@ -13,6 +13,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { PaymentModule } from './payment/payment.module';
 import { BlogModule } from './blog/blog.module';
 import { FavouriteCarModule } from './favourite-car/favourite-car.module';
+import { FaqModule } from './faq/faq.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { FavouriteCarModule } from './favourite-car/favourite-car.module';
     PaymentModule,
     BlogModule,
     FavouriteCarModule,
+    FaqModule,
   ],
   controllers: [AppController],
   providers: [AppService],
