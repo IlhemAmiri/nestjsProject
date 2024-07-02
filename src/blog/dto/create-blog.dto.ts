@@ -1,4 +1,13 @@
-import { IsString, IsNotEmpty, IsDateString } from 'class-validator';
+import { IsString, IsNotEmpty, IsArray, ValidateNested, IsDateString } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class ContentDto {
+  @IsString()
+  title: string;
+
+  @IsString()
+  text: string;
+}
 
 export class CreateBlogDto {
   @IsString()
@@ -24,4 +33,9 @@ export class CreateBlogDto {
   @IsString()
   @IsNotEmpty()
   summary: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ContentDto)
+  content: ContentDto[];
 }

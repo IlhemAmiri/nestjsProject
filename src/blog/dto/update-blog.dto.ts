@@ -1,4 +1,15 @@
-import { IsString, IsOptional, IsDateString } from 'class-validator';
+import { IsString, IsOptional, IsDateString, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class ContentDto {
+  @IsString()
+  @IsOptional()
+  title?: string;
+
+  @IsString()
+  @IsOptional()
+  text?: string;
+}
 
 export class UpdateBlogDto {
   @IsString()
@@ -24,4 +35,10 @@ export class UpdateBlogDto {
   @IsString()
   @IsOptional()
   summary?: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ContentDto)
+  @IsOptional()
+  content?: ContentDto[];
 }

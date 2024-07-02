@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Blog extends Document {
-  
+
   @Prop({ required: true })
   title: string;
 
@@ -21,6 +21,10 @@ export class Blog extends Document {
 
   @Prop({ required: true })
   summary: string;
+
+  @Prop({ type: [{ title: String, text: String }], required: true })
+  content: { title?: string; text: string }[];
+  
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);

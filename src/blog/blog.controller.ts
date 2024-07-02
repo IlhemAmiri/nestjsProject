@@ -21,7 +21,8 @@ import {
     @UseInterceptors(FileInterceptor('image'))
     async create(@Body() createBlogDto: CreateBlogDto, @UploadedFile() file: Express.Multer.File): Promise<Blog> {
       const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
-      return this.blogService.create(createBlogDto, imagePath);
+      const parsedContent = JSON.parse(createBlogDto.content as unknown as string);
+      return this.blogService.create({ ...createBlogDto, content: parsedContent }, imagePath);
     }
   
     @Get()
