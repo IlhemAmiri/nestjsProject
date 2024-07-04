@@ -20,19 +20,19 @@ export class NoteService {
     // Vérifier si le client existe
     const clientExists = await this.clientModel.exists({ _id: idClient, deleted_at: null }).exec();
     if (!clientExists) {
-        throw new NotFoundException('Client not found or deleted');
+      throw new NotFoundException('Client not found or deleted');
     }
 
     // Vérifier si la voiture existe
     const carExists = await this.carModel.exists({ _id: idVoiture, deleted_at: null }).exec();
     if (!carExists) {
-        throw new NotFoundException('Car not found or deleted');
+      throw new NotFoundException('Car not found or deleted');
     }
 
     // Vérifier si une note existe déjà pour la voiture donnée par le client et n'est pas supprimée
     const existingNote = await this.noteModel.findOne({ idClient, idVoiture, deleted_at: null }).exec();
     if (existingNote) {
-        throw new BadRequestException('Le client a déjà donné une note pour cette voiture.');
+      throw new BadRequestException('Le client a déjà donné une note pour cette voiture.');
     }
 
     const createdNote = new this.noteModel(noteDto);
@@ -45,19 +45,19 @@ export class NoteService {
     await this.carModel.findByIdAndUpdate(idVoiture, { note: averageNote }).exec();
 
     return savedNote;
-}
+  }
 
-private async calculateAverageNoteForCar(carId: string): Promise<number> {
+  private async calculateAverageNoteForCar(carId: string): Promise<number> {
     const notes = await this.noteModel.find({ idVoiture: carId, deleted_at: null }).exec();
     if (notes.length === 0) {
-        return 0;
+      return 0;
     }
     const total = notes.reduce((sum, note) => sum + note.note, 0);
     return total / notes.length;
-}
+  }
 
   async findAll(): Promise<Note[]> {
-    return this.noteModel.find({ deleted_at: null }).exec();
+    return this.noteModel.find({ deleted_at: null }).populate('idClient').exec();
   }
 
   async findById(id: string): Promise<Note> {
@@ -69,42 +69,42 @@ private async calculateAverageNoteForCar(carId: string): Promise<number> {
   }
 
   async update(id: string, noteDto: UpdateNoteDto): Promise<Note> {
-  const { note, idClient, idVoiture } = noteDto;
+    const { note, idClient, idVoiture } = noteDto;
 
-  // Vérifier la valeur de la note
-  if (note && (note < 1 || note > 5)) {
-    throw new BadRequestException('La note doit être comprise entre 1 et 5.');
-  }
-
-  // Vérifier si le client existe
-  if (idClient) {
-    const clientExists = await this.clientModel.exists({ _id: idClient }).exec();
-    if (!clientExists) {
-      throw new BadRequestException('Le client spécifié n\'existe pas.');
+    // Vérifier la valeur de la note
+    if (note && (note < 1 || note > 5)) {
+      throw new BadRequestException('La note doit être comprise entre 1 et 5.');
     }
-  }
 
-  // Vérifier si la voiture existe
-  if (idVoiture) {
-    const carExists = await this.carModel.exists({ _id: idVoiture }).exec();
-    if (!carExists) {
-      throw new BadRequestException('La voiture spécifiée n\'existe pas.');
+    // Vérifier si le client existe
+    if (idClient) {
+      const clientExists = await this.clientModel.exists({ _id: idClient }).exec();
+      if (!clientExists) {
+        throw new BadRequestException('Le client spécifié n\'existe pas.');
+      }
     }
+
+    // Vérifier si la voiture existe
+    if (idVoiture) {
+      const carExists = await this.carModel.exists({ _id: idVoiture }).exec();
+      if (!carExists) {
+        throw new BadRequestException('La voiture spécifiée n\'existe pas.');
+      }
+    }
+
+    // Mettre à jour la note si elle n'est pas supprimée
+    const updatedNote = await this.noteModel.findOneAndUpdate(
+      { _id: id, deleted_at: null },
+      noteDto,
+      { new: true }
+    ).exec();
+
+    if (!updatedNote) {
+      throw new NotFoundException('Note not found');
+    }
+
+    return updatedNote;
   }
-
-  // Mettre à jour la note si elle n'est pas supprimée
-  const updatedNote = await this.noteModel.findOneAndUpdate(
-    { _id: id, deleted_at: null },
-    noteDto,
-    { new: true }
-  ).exec();
-
-  if (!updatedNote) {
-    throw new NotFoundException('Note not found');
-  }
-
-  return updatedNote;
-}
 
 
   async delete(id: string): Promise<Note> {
@@ -115,10 +115,10 @@ private async calculateAverageNoteForCar(carId: string): Promise<number> {
     return deletedNote;
   }
   async getNoteByIdClient(idClient: string): Promise<Note[]> {
-    return this.noteModel.find({ idClient, deleted_at: null  }).exec();
+    return this.noteModel.find({ idClient, deleted_at: null }).exec();
   }
 
   async getNoteByIdCar(idVoiture: string): Promise<Note[]> {
-    return this.noteModel.find({ idVoiture, deleted_at: null  }).exec();
+    return this.noteModel.find({ idVoiture, deleted_at: null }).populate('idClient').exec();
   }
 }
