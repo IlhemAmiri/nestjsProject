@@ -7,6 +7,12 @@ import { Document } from 'mongoose';
 })
 
 export class User extends Document {
+  @Prop({ required: true })
+  nom: string;
+
+  @Prop({ required: true })
+  prenom: string;
+  
   @Prop({ required: true, unique: true })
   email: string;
 
@@ -30,11 +36,7 @@ export const UserSchema = SchemaFactory.createForClass(User);
 
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Client extends User {
-  @Prop({ required: true })
-  nom: string;
 
-  @Prop({ required: true })
-  prenom: string;
 
   @Prop({ required: true, unique: true })
   CIN: string;
