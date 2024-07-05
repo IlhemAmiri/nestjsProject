@@ -73,6 +73,10 @@ export class CarService {
       { idVoiture: id },
       { deleted_at: new Date() }
     ).exec();
+    await this.noteModel.updateMany(
+      { idVoiture: id },
+      { deleted_at: new Date() }
+    ).exec();
     const deletedCar = await this.carModel.findByIdAndUpdate(
       id,
       { deleted_at: new Date() },
