@@ -51,6 +51,9 @@ import {
     @UseInterceptors(FileInterceptor('image'))
     async update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto, @UploadedFile() file: Express.Multer.File): Promise<Blog> {
       const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
+      if (typeof updateBlogDto.content === 'string') {
+        updateBlogDto.content = JSON.parse(updateBlogDto.content);
+      }
       return this.blogService.update(id, updateBlogDto, imagePath);
     }
   }

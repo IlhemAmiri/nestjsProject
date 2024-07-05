@@ -41,6 +41,10 @@ export class BlogService {
   }
 
   async update(id: string, updateBlogDto: UpdateBlogDto, imagePath: string): Promise<Blog> {
+    if (typeof updateBlogDto.content === 'string') {
+      updateBlogDto.content = JSON.parse(updateBlogDto.content);
+    }
+  
     const updatedData = { ...updateBlogDto, image: imagePath || updateBlogDto.image };
     const existingBlog = await this.blogModel.findByIdAndUpdate(id, updatedData, { new: true }).exec();
     if (!existingBlog) {
@@ -48,4 +52,5 @@ export class BlogService {
     }
     return existingBlog;
   }
+  
 }

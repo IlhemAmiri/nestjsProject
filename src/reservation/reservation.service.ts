@@ -85,40 +85,54 @@ export class ReservationService {
             throw new NotFoundException('Reservation not found');
         }
     }
+
+
     async updateReservationStatus(id: string, status: string): Promise<Reservation> {
         const reservation = await this.reservationModel.findById(id).exec();
         if (!reservation) {
-          throw new NotFoundException('Reservation not found');
+            throw new NotFoundException('Reservation not found');
         }
-    
+
         if (status === 'confirmer') {
-          const car = await this.carModel.findById(reservation.idVoiture).exec();
-          if (!car) {
-            throw new NotFoundException('Car not found');
-          }
-          const overlappingReservation = await this.reservationModel.findOne({
-            idVoiture: reservation.idVoiture,
-            status: 'confirmer',
-            _id: { $ne: reservation._id }, // Exclude the current reservation
-            $or: [
-              { dateDebut: { $lt: reservation.dateFin }, dateFin: { $gt: reservation.dateDebut } },
-              { dateDebut: { $gte: reservation.dateDebut, $lt: reservation.dateFin } }
-            ]
-          }).exec();
-    
-          if (overlappingReservation) {
-            throw new BadRequestException('Updating status results in overlapping reservation periods');
-          }
-    
-          car.disponibilite = 'reserver';
-          await car.save();
+            const car = await this.carModel.findById(reservation.idVoiture).exec();
+            if (!car) {
+                throw new NotFoundException('Car not found');
+            }
+
+            const overlappingReservation = await this.reservationModel.findOne({
+                idVoiture: reservation.idVoiture,
+                status: 'confirmer',
+                _id: { $ne: reservation._id }, // Exclude the current reservation
+                $or: [
+                    { dateDebut: { $lt: reservation.dateFin }, dateFin: { $gt: reservation.dateDebut } },
+                    { dateDebut: { $gte: reservation.dateDebut, $lt: reservation.dateFin } }
+                ]
+            }).exec();
+
+            if (overlappingReservation) {
+                throw new BadRequestException('Updating status results in overlapping reservation periods');
+            }
+
+            car.disponibilite = 'reserver';
+            await car.save();
+
+            // Annuler les réservations en attente chevauchant cette période
+            await this.reservationModel.updateMany({
+                idVoiture: reservation.idVoiture,
+                status: 'en Attent',
+                $or: [
+                    { dateDebut: { $lt: reservation.dateFin }, dateFin: { $gt: reservation.dateDebut } },
+                    { dateDebut: { $gte: reservation.dateDebut, $lt: reservation.dateFin } }
+                ]
+            }, {
+                $set: { status: 'annuler' }
+            }).exec();
         }
-    
+
         // Update only the status field
         reservation.status = status;
         return reservation.save({ validateBeforeSave: false });
-      }
-    
+    }
     // async getAvailableDatePeriods(idVoiture: string, limit: number = 3): Promise<{ dateDebut: Date, dateFin: Date }[]> {
     //     const now = new Date();
     //     const reservations = await this.reservationModel.find({
