@@ -14,6 +14,7 @@ import { PaymentModule } from './payment/payment.module';
 import { BlogModule } from './blog/blog.module';
 import { FavouriteCarModule } from './favourite-car/favourite-car.module';
 import { FaqModule } from './faq/faq.module';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { FaqModule } from './faq/faq.module';
     MongooseModule.forRoot('mongodb://0.0.0.0:27017/location-voiture?retryWrites=true&w=majority'),
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '1h' },
+      signOptions: { expiresIn: '7h' },
     }),
     UserModule,
     CarModule,
@@ -29,7 +30,8 @@ import { FaqModule } from './faq/faq.module';
     NoteModule,
     AuthModule,
     ServeStaticModule.forRoot({
-      rootPath: 'C:/Users/ilhem/OneDrive/Bureau/locationV/location-voiture/uploads',  // Chemin absolu vers le dossier uploads
+      rootPath: join(process.cwd(), 'uploads'),  // Chemin absolu vers le dossier uploads
+      //rootPath: 'C:/Users/ilhem/OneDrive/Bureau/locationV/location-voiture/uploads',  // Chemin absolu vers le dossier uploads
       serveRoot: '/uploads', // Le chemin URL sous lequel les fichiers seront servis
       serveStaticOptions: {
         redirect: false, // Désactiver les redirections par défaut
@@ -44,4 +46,4 @@ import { FaqModule } from './faq/faq.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }      
