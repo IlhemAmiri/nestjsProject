@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Payment } from './payment.entity';
@@ -18,8 +18,18 @@ export class PaymentService {
     if (!reservation || reservation.deleted_at !== null) {
       throw new NotFoundException(`Reservation with ID ${createPaymentDto.idReservation} not found`);
     }
+    if (reservation.status !== 'confirmer') {
+      throw new BadRequestException(`Reservation with ID ${createPaymentDto.idReservation} is not confirmed and cannot be paid for.`);
+    }
+
     const newPayment = new this.paymentModel(createPaymentDto);
-    return newPayment.save();
+    await newPayment.save();
+
+    // Update the reservation statusPaiement to 'payee'
+    reservation.statusPaiement = 'payee';
+    await reservation.save();
+
+    return newPayment;
   }
 
   async findAll(): Promise<Payment[]> {

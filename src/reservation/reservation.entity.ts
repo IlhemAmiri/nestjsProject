@@ -17,12 +17,14 @@ export class Reservation extends Document {
   @Prop({ required: true })
   chauffeur: boolean;
 
-  // @Prop({
-  //   required: true,
-  //   enum: ['cash', 'card'],
-  //   type: String
-  // })
-  // methodePaiement: string;
+  @Prop({
+    required: true,
+    enum: ['payee', 'non payee', 'deleted'], 
+    type: String,
+    default: 'non payee',
+  })
+  statusPaiement: string;
+
   @Prop({ required: true })
   lieuRamassage: string;
 

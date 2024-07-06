@@ -22,7 +22,7 @@ export class CreateReservationDto {
 
     @IsEnum(['cash', 'card'])
     @IsNotEmpty()
-    methodePaiement: string;
+    statusPaiement: string;
 
     @IsString()
     commentaire?: string;
