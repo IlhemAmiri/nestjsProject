@@ -5,7 +5,8 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User, Client } from './user.entity';
 import { Reservation } from '../reservation/reservation.entity';
-
+import { Note } from '../note/note.entity';
+import { FavouriteCar } from '../favourite-car/favourite-car.entity';
 
 @Injectable()
 export class UserService {
@@ -13,6 +14,8 @@ export class UserService {
         @InjectModel(User.name) private userModel: Model<User>,
         @InjectModel(Client.name) private clientModel: Model<Client>,
         @InjectModel(Reservation.name) private reservationModel: Model<Reservation>,
+        @InjectModel(Note.name) private noteModel: Model<Note>, 
+        @InjectModel(FavouriteCar.name) private favouriteCarModel: Model<FavouriteCar>, // Injectez votre modèle FavouriteCar
         private readonly jwtService: JwtService,
     ) { }
 
@@ -111,7 +114,13 @@ export class UserService {
             { idClient: id },
             { deleted_at: new Date() }
         ).exec();
-    
+        await this.noteModel.updateMany(
+            { idClient: id },
+            { deleted_at: new Date() }
+        ).exec();
+        await this.favouriteCarModel.deleteMany(
+            { idClient: id }
+        ).exec();
         // Supprimer le client lui-même
         const deletedClient = await this.clientModel.findByIdAndUpdate(id, { deleted_at: new Date() }).exec();
         if (!deletedClient) {
