@@ -5,6 +5,7 @@ import { Car } from './car.entity';
 import { Reservation } from '../reservation/reservation.entity';
 import { Note } from '../note/note.entity';
 import { SearchCarDto } from './dto/search-car.dto';
+import { RechercheCarDto } from './dto/recherche-car.dto';
 
 
 interface CarDocument extends Car, Document {
@@ -121,5 +122,27 @@ export class CarService {
     }
     const total = notes.reduce((sum, note) => sum + note.note, 0);
     return total / notes.length;
+  }
+  async recherche(searchCarDto: RechercheCarDto, page: number, limit: number): Promise<{ data: Car[], total: number, page: number, limit: number }> {
+    const filters = {};
+    if (searchCarDto.vehicleType) filters['vehicleType'] = searchCarDto.vehicleType;
+    if (searchCarDto.bodyType) filters['categorie'] = searchCarDto.bodyType;
+    if (searchCarDto.seats) filters['NbPlaces'] = searchCarDto.seats;
+
+    if (searchCarDto.minPrice && searchCarDto.maxPrice) {
+      filters['prixParJ'] = { $gte: searchCarDto.minPrice, $lte: searchCarDto.maxPrice };
+    } else if (searchCarDto.minPrice) {
+      filters['prixParJ'] = { $gte: searchCarDto.minPrice };
+    } else if (searchCarDto.maxPrice) {
+      filters['prixParJ'] = { $lte: searchCarDto.maxPrice };
+    }
+
+    const total = await this.carModel.countDocuments(filters).exec();
+    const data = await this.carModel.find(filters)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .exec();
+
+    return { data, total, page, limit };
   }
 }

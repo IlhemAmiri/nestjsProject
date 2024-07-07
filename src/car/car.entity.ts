@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 @Schema({ timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
 export class Car extends Document {
-  
+
   @Prop({ required: true })
   marque: string;
 
@@ -13,26 +13,26 @@ export class Car extends Document {
   @Prop({ required: true })
   anneeFabrication: number;
 
-  @Prop({ 
-    required: true, 
+  @Prop({
+    required: true,
     enum: ['essence', 'diesel', 'hybride', 'electrique']
   })
   typeCarburant: string;
 
-  @Prop({ 
-    required: true, 
+  @Prop({
+    required: true,
     enum: ['manuelle', 'automatique']
   })
   typeTransmission: string;
 
-  @Prop({ 
-    required: true, 
-    enum: ['compacte', 'berline', 'SUV', 'monospace', 'cabriolet']
+  @Prop({
+    required: true,
+    enum: ['Compact', 'Sedan', 'SUV', 'Minivan', 'Convertible', 'Coupe', 'Exotic Cars', 'Hatchback', 'Truck', 'Sports Car', 'Station Wagon']
   })
   categorie: string;
 
-  @Prop({ 
-    required: true, 
+  @Prop({
+    required: true,
     enum: ['disponible', 'reserver', 'en entretien'],
     default: 'disponible',
   })
@@ -79,7 +79,16 @@ export class Car extends Document {
 
   @Prop()
   offrePromotion: string;
-  
+
+  @Prop({
+    type: String,
+    enum: ['Car', 'Van', 'Minibus', 'Prestige'],
+    default: 'Car',
+  })
+  vehicleType: string;
+
+
+
   @Prop({ type: Date, default: null })
   deleted_at: Date | null;
 }

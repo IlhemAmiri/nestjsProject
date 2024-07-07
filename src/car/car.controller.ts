@@ -9,6 +9,7 @@ import { Role } from '../auth/role.enum';
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
 import { SearchCarDto } from './dto/search-car.dto';
+import { RechercheCarDto } from './dto/recherche-car.dto';
 
 @Controller('cars')
 export class CarController {
@@ -73,5 +74,13 @@ export class CarController {
       ...car.toObject(),
       image: car.image ? `${car.image}` : null,
     })) as Car[];
+  }
+
+  @Get('recherche/check')
+  async recherche(
+    @Query() searchCarDto: RechercheCarDto
+  ): Promise<{ data: Car[], total: number, page: number, limit: number }> {
+    const { page = 1, limit = 12 } = searchCarDto;
+    return this.carService.recherche(searchCarDto, page, limit);
   }
 }
