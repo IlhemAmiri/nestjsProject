@@ -205,7 +205,7 @@ export class ReservationService {
     }
 
     async getReservationByIdCar(carId: string): Promise<Reservation[]> {
-        const reservations = await this.reservationModel.find({ idVoiture: carId, deleted_at: null }).exec();
+        const reservations = await this.reservationModel.find({ idVoiture: carId, deleted_at: null }).populate('idClient').exec();
         if (!reservations || reservations.length === 0) {
             throw new NotFoundException('Reservations for this car not found');
         }
