@@ -92,6 +92,10 @@ export class ReservationService {
         if (!reservation) {
             throw new NotFoundException('Reservation not found');
         }
+        // Check if the reservation is not deleted and the payment status is not "payee"
+        if (reservation.deleted_at !== null || reservation.statusPaiement === 'payee') {
+            throw new BadRequestException('Cannot update reservation status');
+        }
 
         if (status === 'confirmer') {
             const car = await this.carModel.findById(reservation.idVoiture).exec();
@@ -133,45 +137,7 @@ export class ReservationService {
         reservation.status = status;
         return reservation.save({ validateBeforeSave: false });
     }
-    // async getAvailableDatePeriods(idVoiture: string, limit: number = 3): Promise<{ dateDebut: Date, dateFin: Date }[]> {
-    //     const now = new Date();
-    //     const reservations = await this.reservationModel.find({
-    //         idVoiture: idVoiture,
-    //         status: 'confirmer', // Seules les réservations confirmées sont prises en compte
-    //         dateFin: { $gte: now } // Seules les réservations dont la date de fin est après la date actuelle sont prises en compte
-    //     }).sort({ dateFin: 1 }).limit(limit).exec();
-
-    //     const availablePeriods: { dateDebut: Date, dateFin: Date }[] = [];
-
-    //     if (reservations.length === 0) {
-    //         // S'il n'y a pas de réservations futures, retourner trois périodes de dates à partir de maintenant
-    //         for (let i = 0; i < limit; i++) {
-    //             const nextDateDebut = new Date();
-    //             nextDateDebut.setDate(now.getDate() + i);
-    //             const nextDateFin = new Date(nextDateDebut);
-    //             nextDateFin.setDate(nextDateDebut.getDate() + 1); // Durée d'une journée par défaut
-    //             availablePeriods.push({ dateDebut: nextDateDebut, dateFin: nextDateFin });
-    //         }
-    //     } else {
-    //         // Calculer trois périodes de dates disponibles entre la fin de la dernière réservation et le début de la prochaine
-    //         for (let i = 0; i < reservations.length - 1 && availablePeriods.length < limit; i++) {
-    //             const endDate = new Date(reservations[i].dateFin);
-    //             const nextDateDebut = new Date(reservations[i + 1].dateDebut);
-    //             const daysDiff = Math.ceil((nextDateDebut.getTime() - endDate.getTime()) / (1000 * 3600 * 24));
-
-    //             // Ajouter les périodes de dates disponibles entre les réservations à la liste
-    //             for (let j = 1; j <= daysDiff && availablePeriods.length < limit; j++) {
-    //                 const dateDebut = new Date(endDate);
-    //                 dateDebut.setDate(endDate.getDate() + j);
-    //                 const dateFin = new Date(dateDebut);
-    //                 dateFin.setDate(dateDebut.getDate() + 1); // Durée d'une journée par défaut
-    //                 availablePeriods.push({ dateDebut, dateFin });
-    //             }
-    //         }
-    //     }
-
-    //     return availablePeriods;
-    // }
+    
     async getReservedDatePeriods(idVoiture: string): Promise<{ dateDebut: Date, dateFin: Date }[]> {
         const now = new Date();
         const reservations = await this.reservationModel.find({
