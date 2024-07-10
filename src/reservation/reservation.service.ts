@@ -137,7 +137,7 @@ export class ReservationService {
         reservation.status = status;
         return reservation.save({ validateBeforeSave: false });
     }
-    
+
     async getReservedDatePeriods(idVoiture: string): Promise<{ dateDebut: Date, dateFin: Date }[]> {
         const now = new Date();
         const reservations = await this.reservationModel.find({
@@ -171,11 +171,11 @@ export class ReservationService {
     }
 
     async getReservationByIdCar(carId: string): Promise<Reservation[]> {
-        const reservations = await this.reservationModel.find({ idVoiture: carId, deleted_at: null }).populate('idClient').exec();
+        const reservations = await this.reservationModel.find({ idVoiture: carId, deleted_at: null }).populate('idClient').populate('idVoiture').exec();
         if (!reservations || reservations.length === 0) {
             throw new NotFoundException('Reservations for this car not found');
         }
         return reservations;
     }
-
+       
 }
