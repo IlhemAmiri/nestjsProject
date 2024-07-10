@@ -177,5 +177,64 @@ export class ReservationService {
         }
         return reservations;
     }
-       
+    // Function to get the most reserved car
+    async getTopReservedCar(): Promise<Car> {
+        const reservations = await this.reservationModel.aggregate([
+            { $match: { deleted_at: null } },
+            { $group: { _id: '$idVoiture', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 1 },
+            {
+                $lookup: {
+                    from: 'cars',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'car'
+                }
+            },
+            { $unwind: '$car' },
+            {
+                $project: {
+                    _id: 0,
+                    car: 1
+                }
+            }
+        ]).exec();
+
+        if (!reservations || reservations.length === 0) {
+            throw new NotFoundException('No reservations found');
+        }
+
+        return reservations[0].car;
+    }
+
+    async getTopThreeReservedCars(): Promise<Car[]> {
+        const reservations = await this.reservationModel.aggregate([
+            { $match: { deleted_at: null } },
+            { $group: { _id: '$idVoiture', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 3 },
+            {
+                $lookup: {
+                    from: 'cars',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'car'
+                }
+            },
+            { $unwind: '$car' },
+            {
+                $project: {
+                    _id: 0,
+                    car: 1
+                }
+            }
+        ]).exec();
+
+        if (!reservations || reservations.length === 0) {
+            throw new NotFoundException('No reservations found');
+        }
+
+        return reservations.map(reservation => reservation.car);
+    }
 }

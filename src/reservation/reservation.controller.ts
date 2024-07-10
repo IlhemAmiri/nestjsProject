@@ -82,4 +82,17 @@ export class ReservationController {
             throw error;
         }
     }
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.Admin)
+    @Get('top/one')
+    async getTopReservedCar() {
+        return this.reservationService.getTopReservedCar();
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.Admin)
+    @Get('top/three')
+    async getTopThreeReservedCars() {
+        return this.reservationService.getTopThreeReservedCars();
+    }
 }
