@@ -7,6 +7,7 @@ export class CreateSocialMediaDto {
     readonly lienYoutube?: string;
     readonly lienPinterest?: string;
     readonly lienInstagram?: string;
+    readonly lienLinkedin?: string;
     readonly localisation?: string;
   }
   

@@ -28,6 +28,9 @@ export class SocialMedia {
 
   @Prop()
   lienInstagram: string;
+  
+  @Prop()
+  lienLinkedin: string;
 
   @Prop()
   localisation: string;
