@@ -15,6 +15,7 @@ import { BlogModule } from './blog/blog.module';
 import { FavouriteCarModule } from './favourite-car/favourite-car.module';
 import { FaqModule } from './faq/faq.module';
 import { join } from 'path';
+import { SocialmediaModule } from './socialmedia/socialmedia.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { join } from 'path';
     BlogModule,
     FavouriteCarModule,
     FaqModule,
+    SocialmediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

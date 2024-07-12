@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, UnauthorizedException, NotFoundException, BadRequestException  } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -7,6 +7,7 @@ import { User, Client } from './user.entity';
 import { Reservation } from '../reservation/reservation.entity';
 import { Note } from '../note/note.entity';
 import { FavouriteCar } from '../favourite-car/favourite-car.entity';
+import * as moment from 'moment';
 
 @Injectable()
 export class UserService {
@@ -20,7 +21,10 @@ export class UserService {
     ) { }
 
     async register(createUserDto: any,imagePath: string): Promise<User> {
-        const { email, password } = createUserDto;
+        const { email, password, dateNaissance } = createUserDto;
+        if (!isAdult(dateNaissance)) {
+            throw new BadRequestException('Client must be at least 18 years old');
+          }
         const existingUser = await this.userModel.findOne({ email, deleted_at: null }).exec();
         const existingClient = await this.clientModel.findOne({ email, deleted_at: null }).exec();
 
@@ -82,6 +86,11 @@ export class UserService {
     }
     
     async updateClient(id: string, updateClientDto: any, imagePath?: string): Promise<Client> {
+        const { dateNaissance } = updateClientDto;
+
+        if (dateNaissance && !isAdult(dateNaissance)) {
+          throw new BadRequestException('Client must be at least 18 years old');
+        }
         const updateData = imagePath ? { ...updateClientDto, image: imagePath } : updateClientDto;
         const updatedClient = await this.clientModel.findOneAndUpdate(
           { _id: id, deleted_at: null },
@@ -131,3 +140,9 @@ export class UserService {
 }
 
 
+function isAdult(dateOfBirth: Date): boolean {
+    const today = moment();
+    const birthDate = moment(dateOfBirth);
+    const age = today.diff(birthDate, 'years');
+    return age >= 18;
+  }
