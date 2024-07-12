@@ -24,6 +24,11 @@ export class ReservationService {
         if (!client || client.deleted_at !== null) {
             throw new NotFoundException('Client not found');
         }
+        // Vérifier la date d'expiration du permis
+        const dateExpirationPermis = new Date(client.dateExpirationPermis);
+        if (dateExpirationPermis < now) {
+            throw new BadRequestException('The client\'s driving license has expired');
+        }
         const overlappingReservation = await this.reservationModel.findOne({
             idVoiture: createReservationDto.idVoiture,
             status: 'confirmer', // Rechercher uniquement les réservations confirmées
@@ -96,11 +101,21 @@ export class ReservationService {
         if (reservation.deleted_at !== null || reservation.statusPaiement === 'payee') {
             throw new BadRequestException('Cannot update reservation status');
         }
-
         if (status === 'confirmer') {
             const car = await this.carModel.findById(reservation.idVoiture).exec();
             if (!car) {
                 throw new NotFoundException('Car not found');
+            }
+            const client = await this.clientModel.findById(reservation.idClient).exec();
+            if (!client) {
+                throw new NotFoundException('Client not found');
+            }
+
+            // Vérifier la date d'expiration du permis
+            const now = new Date();
+            const dateExpirationPermis = new Date(client.dateExpirationPermis);
+            if (dateExpirationPermis < now) {
+                throw new BadRequestException('The client\'s driving license has expired');
             }
 
             const overlappingReservation = await this.reservationModel.findOne({
