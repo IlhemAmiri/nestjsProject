@@ -5,6 +5,7 @@ import { Reservation } from './reservation.entity';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Car } from '../car/car.entity';
 import { Client } from '../user/user.entity';
+import * as moment from 'moment';
 
 @Injectable()
 export class ReservationService {
@@ -252,4 +253,48 @@ export class ReservationService {
 
         return reservations.map(reservation => reservation.car);
     }
+    async getTopReservedCarOfMonth(): Promise<Car> {
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1; // Les mois sont de 0 à 11 en JavaScript
+        const currentYear = currentDate.getFullYear();
+    
+        const reservations = await this.reservationModel.aggregate([
+            {
+                $match: {
+                    deleted_at: null,
+                    $expr: {
+                        $and: [
+                            { $eq: [{ $month: { $toDate: '$dateDebut' } }, currentMonth] },
+                            { $eq: [{ $year: { $toDate: '$dateDebut' } }, currentYear] },
+                        ]
+                    }
+                }
+            },
+            { $group: { _id: '$idVoiture', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 1 },
+            {
+                $lookup: {
+                    from: 'cars',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'car'
+                }
+            },
+            { $unwind: '$car' },
+            {
+                $project: {
+                    _id: 0,
+                    car: 1
+                }
+            }
+        ]).exec();
+    
+        if (!reservations || reservations.length === 0) {
+            throw new NotFoundException('No reservations found for the current month');
+        }
+    
+        return reservations[0].car;
+    }
+    
 }

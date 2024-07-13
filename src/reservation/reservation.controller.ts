@@ -95,4 +95,11 @@ export class ReservationController {
     async getTopThreeReservedCars() {
         return this.reservationService.getTopThreeReservedCars();
     }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(Role.Admin)
+    @Get('top/month')
+    async getTopReservedCarOfMonth() {
+        return this.reservationService.getTopReservedCarOfMonth();
+    }
 }
