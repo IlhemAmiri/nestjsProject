@@ -124,7 +124,7 @@ export class CarService {
     return total / notes.length;
   }
   async recherche(searchCarDto: RechercheCarDto, page: number, limit: number): Promise<{ data: Car[], total: number, page: number, limit: number }> {
-    const filters = {};
+    const filters: any = { deleted_at: null }; 
     if (searchCarDto.vehicleType) filters['vehicleType'] = searchCarDto.vehicleType;
     if (searchCarDto.bodyType) filters['categorie'] = searchCarDto.bodyType;
     if (searchCarDto.seats) filters['NbPlaces'] = searchCarDto.seats;

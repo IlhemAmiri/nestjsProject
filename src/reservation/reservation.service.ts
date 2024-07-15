@@ -25,6 +25,13 @@ export class ReservationService {
         if (!client || client.deleted_at !== null) {
             throw new NotFoundException('Client not found');
         }
+        // Check if any required user fields are empty
+        const requiredFields = ['nom', 'prenom', 'email', 'CIN', 'passport', 'adresse', 'numTel', 'numPermisConduire'];
+        for (const field of requiredFields) {
+            if (!client[field] || client[field].trim() === '') {
+                throw new BadRequestException(`Client information incomplete: ${field} is required`);
+            }
+        }
         // Vérifier la date d'expiration du permis
         const dateExpirationPermis = new Date(client.dateExpirationPermis);
         if (dateExpirationPermis < now) {
@@ -257,7 +264,7 @@ export class ReservationService {
         const currentDate = new Date();
         const currentMonth = currentDate.getMonth() + 1; // Les mois sont de 0 à 11 en JavaScript
         const currentYear = currentDate.getFullYear();
-    
+
         const reservations = await this.reservationModel.aggregate([
             {
                 $match: {
@@ -289,12 +296,12 @@ export class ReservationService {
                 }
             }
         ]).exec();
-    
+
         if (!reservations || reservations.length === 0) {
             throw new NotFoundException('No reservations found for the current month');
         }
-    
+
         return reservations[0].car;
     }
-    
+
 }

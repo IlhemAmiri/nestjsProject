@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-@Schema({ 
-  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }, 
-  discriminatorKey: 'role' 
+@Schema({
+  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
+  discriminatorKey: 'role'
 })
 
 export class User extends Document {
@@ -12,24 +12,32 @@ export class User extends Document {
 
   @Prop({ required: true })
   prenom: string;
-  
-  @Prop({ required: true, unique: true })
+
+  @Prop({ unique: true })
   email: string;
 
-  @Prop({ required: true })
+  @Prop()
   password: string;
 
-  @Prop({ 
-    required: true, 
-    default: 'admin',  
-    enum: ['admin', 'client'],
-    type: String
-  })
-  role: string;
   @Prop()
-  image: string;
-  @Prop({ type: Date, default: null })
-  deleted_at: Date | null;
+  resetPasswordToken: string;
+
+  @Prop()
+  resetPasswordExpires: Date;
+
+@Prop({
+  required: true,
+  default: 'admin',
+  enum: ['admin', 'client'],
+  type: String
+})
+role: string;
+
+@Prop()
+image: string;
+
+@Prop({ type: Date, default: null })
+deleted_at: Date | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -38,25 +46,25 @@ export const UserSchema = SchemaFactory.createForClass(User);
 export class Client extends User {
 
 
-  @Prop({ required: true, unique: true })
+  @Prop({ unique: true })
   CIN: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ unique: true })
   passport: string;
 
-  @Prop({ required: true })
+  @Prop()
   adresse: string;
 
-  @Prop({ required: true })
+  @Prop()
   numTel: string;
 
-  @Prop({ required: true })
+  @Prop()
   dateNaissance: Date;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ unique: true })
   numPermisConduire: string;
 
-  @Prop({ required: true })
+  @Prop()
   dateExpirationPermis: Date;
 
   @Prop({

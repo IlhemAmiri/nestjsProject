@@ -8,8 +8,8 @@ import { Reservation } from '../reservation/reservation.entity';
 import { Note } from '../note/note.entity';
 import { FavouriteCar } from '../favourite-car/favourite-car.entity';
 import * as moment from 'moment';
-import { CompleteRegistrationDto } from './dto/complete-registration.dto';
 import * as crypto from 'crypto';
+import * as nodemailer from 'nodemailer';
 @Injectable()
 export class UserService {
     constructor(
@@ -87,10 +87,14 @@ export class UserService {
     }
 
     async updateClient(id: string, updateClientDto: any, imagePath?: string): Promise<Client> {
-        const { dateNaissance } = updateClientDto;
+        const { email, dateNaissance } = updateClientDto;
 
         if (dateNaissance && !isAdult(dateNaissance)) {
             throw new BadRequestException('Client must be at least 18 years old');
+        }
+        const admin = await this.userModel.findOne({ role: 'admin' }).exec();
+        if (admin && email === admin.email) {
+            throw new BadRequestException('Cannot use admin email for a client');
         }
         const updateData = imagePath ? { ...updateClientDto, image: imagePath } : updateClientDto;
         const updatedClient = await this.clientModel.findOneAndUpdate(
@@ -158,14 +162,14 @@ export class UserService {
                 prenom: user.lastName,
                 image: user.picture,
                 role: 'client',
-                password: this.generateRandomPassword(), // Génère un mot de passe aléatoire
-                CIN: 'CIN1234560',
-                passport: 'PASS1234560',
-                adresse: '123 Fake Street',
-                numTel: '12345678900',
-                dateNaissance: new Date('1990-01-01'),
-                numPermisConduire: 'PERMIS1234560',
-                dateExpirationPermis: new Date('2030-01-01'),
+                password: '', 
+                CIN: '',
+                passport: '',
+                adresse: '',
+                numTel: '',
+                dateNaissance: null,
+                numPermisConduire: '',
+                dateExpirationPermis: null,
                 accessToken: user.accessToken,
             });
 
@@ -193,14 +197,14 @@ export class UserService {
                 prenom: user.lastName,
                 image: user.picture,
                 role: 'client',
-                password: this.generateRandomPassword(), // Génère un mot de passe aléatoire
-                CIN: 'CIN6543210',
-                passport: 'PASS6543210',
-                adresse: '456 Fake Avenue',
-                numTel: '09876543210',
-                dateNaissance: new Date('1995-05-05'),
-                numPermisConduire: 'PERMIS6543210',
-                dateExpirationPermis: new Date('2035-05-05'),
+                password: '',
+                CIN: '',
+                passport: '',
+                adresse: '',
+                numTel: '',
+                dateNaissance: null,
+                numPermisConduire: '',
+                dateExpirationPermis: null,
                 accessToken: user.accessToken,
             });
 
@@ -213,6 +217,70 @@ export class UserService {
 
         return { token, email: existingUser.email, role: existingUser.role, userId: existingUser._id.toString() };
     }
+    
+    async updatePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
+        let user = await this.userModel.findById(userId).exec();
+    
+        if (!user) {
+            user = await this.clientModel.findById(userId).exec();
+        }
+    
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+    
+        if (user.password) {
+            // Si le mot de passe actuel n'est pas vide, vérifier l'ancien mot de passe
+            if (oldPassword) {
+                const passwordMatches = await bcrypt.compare(oldPassword, user.password);
+                if (!passwordMatches) {
+                    throw new UnauthorizedException('Old password is incorrect');
+                }
+            } else {
+                throw new BadRequestException('Old password is required');
+            }
+        }
+    
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+    }
+
+    async forgotPassword(email: string): Promise<void> {
+        let user = await this.userModel.findOne({ email, deleted_at: null }).exec();
+        if (!user) {
+            user = await this.clientModel.findOne({ email, deleted_at: null }).exec();
+        }
+
+        if (!user) {
+            throw new NotFoundException('User with this email does not exist');
+        }
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const hashedResetToken = await bcrypt.hash(resetToken, 10);
+        user.resetPasswordToken = hashedResetToken;
+        user.resetPasswordExpires = moment().add(1, 'hour').toDate();
+        await user.save();
+    }
+
+    async resetPassword(resetToken: string, newPassword: string): Promise<void> {
+        const hashedResetToken = await bcrypt.hash(resetToken, 10);
+        let user = await this.userModel.findOne({ resetPasswordToken: hashedResetToken, resetPasswordExpires: { $gt: new Date() } }).exec();
+        if (!user) {
+            user = await this.clientModel.findOne({ resetPasswordToken: hashedResetToken, resetPasswordExpires: { $gt: new Date() } }).exec();
+        }
+
+        if (!user) {
+            throw new BadRequestException('Password reset token is invalid or has expired');
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+    }
+
 
 }
 

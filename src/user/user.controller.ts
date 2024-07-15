@@ -74,4 +74,23 @@ export class UserController {
         return `Le client avec l'identifiant ${id} a été supprimé`;
     }
 
+    
+    @UseGuards(JwtAuthGuard)
+    @Put('update-password')
+    async updatePassword(
+        @Body() updatePasswordDto: { userId: string, oldPassword: string, newPassword: string }
+    ): Promise<void> {
+        await this.userService.updatePassword(updatePasswordDto.userId, updatePasswordDto.oldPassword, updatePasswordDto.newPassword);
+    }
+
+    @Post('forgot-password')
+    async forgotPassword(@Body() forgotPasswordDto: { email: string }): Promise<void> {
+        await this.userService.forgotPassword(forgotPasswordDto.email);
+    }
+
+    @Post('reset-password')
+    async resetPassword(@Body() resetPasswordDto: { resetToken: string, newPassword: string }): Promise<void> {
+        await this.userService.resetPassword(resetPasswordDto.resetToken, resetPasswordDto.newPassword);
+    }
+
 }
