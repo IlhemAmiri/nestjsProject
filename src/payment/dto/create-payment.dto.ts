@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEnum, IsString } from 'class-validator';
+import { IsNotEmpty, IsEnum, IsString, IsOptional, IsBoolean } from 'class-validator';
 import { Types } from 'mongoose';
 
 export class CreatePaymentDto {
@@ -13,4 +13,7 @@ export class CreatePaymentDto {
   @IsNotEmpty()
   @IsEnum(['payee', 'non payee'])
   status: string;
+  @IsOptional()
+  @IsBoolean()
+  confirmeParAdmin?: boolean;
 }

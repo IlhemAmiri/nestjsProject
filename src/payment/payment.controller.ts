@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards, ParseBoolPipe  } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -32,6 +32,13 @@ export class PaymentController {
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
     return this.paymentService.update(id, updatePaymentDto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @Patch('confirm/:id')
+  async confirmPayment(@Param('id') id: string, @Body('confirmeParAdmin', ParseBoolPipe) confirmeParAdmin: boolean) {
+    return this.paymentService.confirmPayment(id, confirmeParAdmin);
   }
 
 

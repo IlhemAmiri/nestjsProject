@@ -19,7 +19,7 @@ export class Reservation extends Document {
 
   @Prop({
     required: true,
-    enum: ['payee', 'non payee', 'deleted'], 
+    enum: ['payee', 'non payee', 'deleted','en attente'], 
     type: String,
     default: 'non payee',
   })

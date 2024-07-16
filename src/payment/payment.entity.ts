@@ -22,7 +22,12 @@ export class Payment extends Document {
     default: 'non payee',
   })
   status: string;
-
+  
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  confirmeParAdmin: boolean;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);

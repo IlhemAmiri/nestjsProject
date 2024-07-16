@@ -26,14 +26,14 @@ export class PaymentService {
     await newPayment.save();
 
     // Update the reservation statusPaiement to 'payee'
-    reservation.statusPaiement = 'payee';
+    reservation.statusPaiement = 'en attente';
     await reservation.save();
-
+   
     return newPayment;
   }
 
   async findAll(): Promise<Payment[]> {
-    return this.paymentModel.find({ status: { $ne: 'deleted' } }).exec();
+    return this.paymentModel.find({ status: { $ne: 'deleted' } }).populate('idReservation').exec();
   }
 
   async findOne(id: string): Promise<Payment> {
@@ -65,6 +65,33 @@ export class PaymentService {
     if (!payment) {
       throw new NotFoundException(`Payment #${id} not found`);
     }
+    return payment;
+  }
+
+
+  async confirmPayment(id: string, confirmeParAdmin: boolean): Promise<Payment> {
+    const payment = await this.paymentModel.findById(id).exec();
+    if (!payment) {
+      throw new NotFoundException(`Payment #${id} not found`);
+    }
+
+    if (payment.methodePaiement !== 'cash') {
+      throw new BadRequestException(`Payment #${id} is not a cash payment and cannot be confirmed by admin.`);
+    }
+
+    payment.confirmeParAdmin = confirmeParAdmin;
+
+    if (confirmeParAdmin) {
+      const reservation = await this.reservationModel.findById(payment.idReservation).exec();
+      if (!reservation) {
+        throw new NotFoundException(`Reservation with ID ${payment.idReservation} not found`);
+      }
+      reservation.statusPaiement = 'payee';
+      await reservation.save();
+    }
+
+    await payment.save();
+
     return payment;
   }
 }
