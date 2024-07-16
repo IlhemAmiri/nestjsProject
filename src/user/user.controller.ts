@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards,UploadedFile,UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards, UploadedFile, UseInterceptors, NotFoundException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User, Client } from './user.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -8,6 +8,8 @@ import { Role } from '../auth/role.enum';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Controller('users')
 
@@ -17,10 +19,10 @@ export class UserController {
     @Post('register')
     @UseInterceptors(FileInterceptor('image'))
     async register(@Body() createUserDto: CreateUserDto, @UploadedFile() file: Express.Multer.File): Promise<User> {
-      const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
-      return this.userService.register(createUserDto, imagePath);
+        const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
+        return this.userService.register(createUserDto, imagePath);
     }
-    
+
 
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(Role.Admin)
@@ -59,14 +61,14 @@ export class UserController {
     @UseInterceptors(FileInterceptor('image'))
     @Put('clients/:id')
     async updateClient(
-      @Param('id') id: string,
-      @Body() updateClientDto: UpdateUserDto,
-      @UploadedFile() file: Express.Multer.File
+        @Param('id') id: string,
+        @Body() updateClientDto: UpdateUserDto,
+        @UploadedFile() file: Express.Multer.File
     ): Promise<Client> {
-      const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
-      return this.userService.updateClient(id, updateClientDto, imagePath);
+        const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
+        return this.userService.updateClient(id, updateClientDto, imagePath);
     }
-    
+
     @UseGuards(JwtAuthGuard)
     @Delete('clients/:id')
     async deleteClient(@Param('id') id: string): Promise<string> {
@@ -74,7 +76,7 @@ export class UserController {
         return `Le client avec l'identifiant ${id} a été supprimé`;
     }
 
-    
+
     @UseGuards(JwtAuthGuard)
     @Put('update-password')
     async updatePassword(
@@ -84,13 +86,19 @@ export class UserController {
     }
 
     @Post('forgot-password')
-    async forgotPassword(@Body() forgotPasswordDto: { email: string }): Promise<void> {
-        await this.userService.forgotPassword(forgotPasswordDto.email);
+    async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto): Promise<void> {
+        const { email } = forgotPasswordDto;
+        try {
+            await this.userService.forgotPassword(email);
+        } catch (error) {
+            throw new NotFoundException('User with this email does not exist');
+        }
     }
 
     @Post('reset-password')
-    async resetPassword(@Body() resetPasswordDto: { resetToken: string, newPassword: string }): Promise<void> {
-        await this.userService.resetPassword(resetPasswordDto.resetToken, resetPasswordDto.newPassword);
+    async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<void> {
+        const { resetToken, newPassword, email } = resetPasswordDto;
+        await this.userService.resetPassword(resetToken, newPassword, email);
     }
 
 }

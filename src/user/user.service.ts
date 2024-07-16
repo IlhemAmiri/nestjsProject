@@ -162,7 +162,7 @@ export class UserService {
                 prenom: user.lastName,
                 image: user.picture,
                 role: 'client',
-                password: '', 
+                password: '',
                 CIN: '',
                 passport: '',
                 adresse: '',
@@ -217,18 +217,18 @@ export class UserService {
 
         return { token, email: existingUser.email, role: existingUser.role, userId: existingUser._id.toString() };
     }
-    
+
     async updatePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
         let user = await this.userModel.findById(userId).exec();
-    
+
         if (!user) {
             user = await this.clientModel.findById(userId).exec();
         }
-    
+
         if (!user) {
             throw new NotFoundException('User not found');
         }
-    
+
         if (user.password) {
             // Si le mot de passe actuel n'est pas vide, vérifier l'ancien mot de passe
             if (oldPassword) {
@@ -240,38 +240,69 @@ export class UserService {
                 throw new BadRequestException('Old password is required');
             }
         }
-    
+
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedPassword;
         await user.save();
     }
 
+    // Configurez votre transporteur nodemailer
+    private transporter = nodemailer.createTransport({
+        service: 'gmail', // ou tout autre service de messagerie
+        auth: {
+            user: 'ilhem.amiri22@gmail.com', // votre email
+            pass: 'dofz udva mvkg yhch', // votre mot de passe
+        },
+    });
+
     async forgotPassword(email: string): Promise<void> {
+        console.log(`Forgot password for email: ${email}`);
         let user = await this.userModel.findOne({ email, deleted_at: null }).exec();
         if (!user) {
             user = await this.clientModel.findOne({ email, deleted_at: null }).exec();
         }
 
         if (!user) {
+            console.log(`User not found for email: ${email}`);
             throw new NotFoundException('User with this email does not exist');
         }
 
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        const hashedResetToken = await bcrypt.hash(resetToken, 10);
-        user.resetPasswordToken = hashedResetToken;
-        user.resetPasswordExpires = moment().add(1, 'hour').toDate();
+        const resetToken = this.jwtService.sign({ email: user.email, sub: user._id }, { expiresIn: '1h' });
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
         await user.save();
+
+        const resetUrl = `http://localhost:3000/reset-password?token=${resetToken}&email=${email}`;
+        const message = `You are receiving this email because you (or someone else) have requested the reset of a password. Please make a put request to: \n\n ${resetUrl}`;
+
+        await this.transporter.sendMail({
+            to: user.email,
+            subject: 'Password reset token',
+            text: message,
+        });
+
+        console.log(`Password reset email sent to: ${user.email}`);
     }
 
-    async resetPassword(resetToken: string, newPassword: string): Promise<void> {
-        const hashedResetToken = await bcrypt.hash(resetToken, 10);
-        let user = await this.userModel.findOne({ resetPasswordToken: hashedResetToken, resetPasswordExpires: { $gt: new Date() } }).exec();
+    async resetPassword(resetToken: string, newPassword: string, email: string): Promise<void> {
+        console.log(`Reset password with token: ${resetToken}`);
+        let user = await this.userModel.findOne({
+            email,
+            resetPasswordToken: resetToken,
+            resetPasswordExpires: { $gt: new Date() }
+        }).exec();
+
         if (!user) {
-            user = await this.clientModel.findOne({ resetPasswordToken: hashedResetToken, resetPasswordExpires: { $gt: new Date() } }).exec();
+            user = await this.clientModel.findOne({
+                email,
+                resetPasswordToken: resetToken,
+                resetPasswordExpires: { $gt: new Date() }
+            }).exec();
         }
 
         if (!user) {
-            throw new BadRequestException('Password reset token is invalid or has expired');
+            console.log(`Invalid or expired token`);
+            throw new NotFoundException('Password reset token is invalid or has expired');
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -279,6 +310,8 @@ export class UserService {
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;
         await user.save();
+
+        console.log(`Password reset successful for user: ${user.email}`);
     }
 
 
