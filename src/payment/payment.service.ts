@@ -33,11 +33,11 @@ export class PaymentService {
   }
 
   async findAll(): Promise<Payment[]> {
-    return this.paymentModel.find({ status: { $ne: 'deleted' } }).populate('idReservation').exec();
+    return this.paymentModel.find({ status: { $ne: 'deleted' } }).exec();
   }
 
   async findOne(id: string): Promise<Payment> {
-    const payment = await this.paymentModel.findOne({ _id: id, status: { $ne: 'deleted' } }).exec();
+    const payment = await this.paymentModel.findOne({ _id: id, status: { $ne: 'deleted' } }).populate('idReservation').exec();
     if (!payment) {
       throw new NotFoundException(`Payment #${id} not found`);
     }
