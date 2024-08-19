@@ -43,20 +43,25 @@ export class CarService {
     return updatedCar;
   }
 
-  async findAll(page: number, limit: number): Promise<{ data: any[], total: number }> {
+  async findAll(page: number, limit: number, sort: string): Promise<{ data: any[], total: number }> {
     const skip = (page - 1) * limit;
     const total = await this.carModel.countDocuments({ deleted_at: null }).exec();
+
+    const sortOrder = sort === 'asc' ? 1 : -1;
+
     const cars = await this.carModel.find({ deleted_at: null })
+      .sort({ created_at: sortOrder })  // Apply dynamic sorting
       .skip(skip)
       .limit(limit)
       .exec();
-  
+
     for (const car of cars) {
       car.note = await this.calculateAverageNote(car._id);
     }
-  
+
     return { data: cars, total };
-  }
+}
+
 
 
   async findOne(id: string): Promise<any> {

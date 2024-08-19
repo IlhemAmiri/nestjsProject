@@ -36,9 +36,10 @@ export class CarController {
   @Get()
   async findAll(
     @Query('page') page: number = 1,
-    @Query('limit') limit: number = 12
+    @Query('limit') limit: number = 12,
+    @Query('sort') sort: string = 'asc',
   ): Promise<{ data: Car[], total: number, page: number, limit: number }> {
-    const { data, total } = await this.carService.findAll(page, limit);
+    const { data, total } = await this.carService.findAll(page, limit, sort);
     return {
       data: data.map(car => ({
         ...car.toObject(),
