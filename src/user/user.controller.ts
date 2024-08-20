@@ -19,7 +19,7 @@ export class UserController {
     @Post('register')
     @UseInterceptors(FileInterceptor('image'))
     async register(@Body() createUserDto: CreateUserDto, @UploadedFile() file: Express.Multer.File): Promise<User> {
-        const imagePath = file ? `http://192.168.1.185:3001/uploads/${file.filename}` : null;
+        const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
         return this.userService.register(createUserDto, imagePath);
     }
 
@@ -65,7 +65,7 @@ export class UserController {
         @Body() updateClientDto: UpdateUserDto,
         @UploadedFile() file: Express.Multer.File
     ): Promise<Client> {
-        const imagePath = file ? `http://192.168.1.185:3001/uploads/${file.filename}` : null;
+        const imagePath = file ? `http://localhost:3001/uploads/${file.filename}` : null;
         return this.userService.updateClient(id, updateClientDto, imagePath);
     }
 

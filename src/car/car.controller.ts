@@ -20,7 +20,7 @@ export class CarController {
   @Post()
   @UseInterceptors(FilesInterceptor('images', 4))  // Adjust the field name to 'images' and limit to 4 files
   async create(@Body() createCarDto: CreateCarDto, @UploadedFiles() files: Express.Multer.File[]): Promise<Car> {
-    const imagePaths = files.map(file => `http://192.168.1.185:3001/uploads/${file.filename}`);
+    const imagePaths = files.map(file => `http://localhost:3001/uploads/${file.filename}`);
     return this.carService.create(createCarDto, imagePaths);
   }
 
@@ -29,7 +29,7 @@ export class CarController {
   @Put(':id')
   @UseInterceptors(FilesInterceptor('images', 4))  // Adjust the field name to 'images' and limit to 4 files
   async update(@Param('id') id: string, @Body() updateCarDto: UpdateCarDto, @UploadedFiles() files: Express.Multer.File[]): Promise<Car> {
-    const imagePaths = files ? files.map(file => `http://192.168.1.185:3001/uploads/${file.filename}`) : null;
+    const imagePaths = files ? files.map(file => `http://localhost:3001/uploads/${file.filename}`) : null;
     return this.carService.update(id, updateCarDto, imagePaths);
   }
 
